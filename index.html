@@ -224,10 +224,10 @@ const carto = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/
 const dark  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,attribution:'Tiles &copy; Esri — Esri, HERE, Garmin'});
 const osm   = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'});
 const esri  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri'});
-const map = L.map('map',{zoomControl:false, layers:[carto], tap:true}).setView([1.2895,103.852],14);
+const map = L.map('map',{zoomControl:false, layers:[osm], tap:true}).setView([1.2895,103.852],14);
 L.control.zoom({position:'topright'}).addTo(map);
 L.control.scale({metric:true,imperial:false,position:'bottomleft'}).addTo(map);
-const bases = {'Esri 街道圖（預設）':carto,'Esri 夜間暗色':dark,'OpenStreetMap':osm,'Esri 衛星影像':esri};
+const bases = {'OpenStreetMap（預設）':osm,'Esri 街道圖':carto,'Esri 夜間暗色':dark,'Esri 衛星影像':esri};
 const mrt = L.layerGroup(D.mrt.map(s=>L.circleMarker([s[1],s[2]],{radius:5,color:'#fff',weight:2,fillColor:'#0f172a',fillOpacity:.95}).bindTooltip('MRT '+s[0],{direction:'top'})));
 const layersCtl = L.control.layers(bases,{'MRT 參考站':mrt},{position:'topright',collapsed:true}).addTo(map);
 const legend = L.control({position:'bottomright'});
@@ -419,7 +419,7 @@ function setSheet(s){ document.documentElement.style.setProperty('--sheet-h', SH
 })();
 
 /* ---------- 工具列 ---------- */
-$('#btnNight').onclick = ()=>{ const on=!map.hasLayer(dark); Object.values(bases).forEach(l=>map.removeLayer(l)); (on?dark:carto).addTo(map); $('#btnNight').classList.toggle('on',on); };
+$('#btnNight').onclick = ()=>{ const on=!map.hasLayer(dark); Object.values(bases).forEach(l=>map.removeLayer(l)); (on?dark:osm).addTo(map); $('#btnNight').classList.toggle('on',on); };
 map.on('baselayerchange',e=>$('#btnNight').classList.toggle('on', e.layer===dark));
 let me=null;
 $('#btnLoc').onclick = ()=>{ if(!navigator.geolocation){ toast('此瀏覽器不支援定位'); return; }

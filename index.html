@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#18181b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="BTS THE CITY ARIRANG SINGAPORE 2026 互動地圖：全部官方活動、集章點、散步路線與個人行程">
+<title>BTS THE CITY ARIRANG SINGAPORE 2026 互動地圖</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>if(typeof L==='undefined'){document.write('<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');}</script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<style>
+:root{--red:#c81d25;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--bg:#fff;--soft:#f8fafc;--sheet-h:46vh}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);background:#e5e7eb;-webkit-text-size-adjust:100%}
+button{font:inherit;cursor:pointer}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+header{flex:0 0 auto;background:linear-gradient(120deg,#18181b,#4c0519 60%,#9f1239);color:#fff;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;display:flex;align-items:center;gap:8px;z-index:1200}
+header .ttl{flex:1;min-width:0}
+header h1{font-size:15px;font-weight:800;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header p{font-size:11px;color:#fecdd3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:10px;min-width:38px;height:38px;padding:0 9px;font-size:16px}
+.hbtn.on{background:#fff;color:#9f1239}
+#body{flex:1;position:relative;display:flex;min-height:0}
+#map{flex:1;min-height:0;background:#dbeafe}
+#panel{background:var(--bg);display:flex;flex-direction:column;z-index:1100;min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto}
+.tab{flex:1;background:none;border:none;padding:10px 4px;font-size:13px;font-weight:700;color:var(--mut);border-bottom:3px solid transparent}
+.tab.on{color:var(--red);border-bottom-color:var(--red)}
+.pane{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.pane.on{display:block}
+.pad{padding:10px 12px}
+.sticky{position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
+.search{width:100%;padding:9px 11px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;background:var(--soft)}
+.row{display:flex;gap:6px;overflow-x:auto;padding:7px 0 2px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:999px;padding:5px 10px;font-size:12.5px;white-space:nowrap}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+.chip.trip{border-color:#f59e0b;background:#fffbeb}
+.chip.trip.on{background:#b45309;border-color:#b45309;color:#fff}
+.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:1px}
+.count{font-size:12px;color:var(--mut);padding:6px 2px 0}
+.zh{font-size:12px;font-weight:800;color:var(--mut);letter-spacing:.5px;margin:12px 2px 6px}
+.card{border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px;background:#fff}
+.card:active{background:#fff1f2}
+.card .nm{font-weight:800;font-size:14.5px}
+.card .en{font-size:11.5px;color:var(--mut)}
+.ev{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);font-size:12.5px;line-height:1.5}
+.ev b{font-weight:700}
+.tag{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:5px;color:#fff;margin-right:4px;vertical-align:1px}
+.bd{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:3px;vertical-align:1px}
+.b-free{background:#d1fae5;color:#065f46}.b-ticket{background:#fee2e2;color:#991b1b}.b-mixed{background:#fef3c7;color:#92400e}
+.b-spend{background:#e0e7ff;color:#3730a3}.b-resv{background:#fce7f3;color:#9d174d}.b-stamp{background:#f59e0b;color:#fff}
+.b-upd{background:#0ea5e9;color:#fff}.b-now{background:#16a34a;color:#fff}
+.muted{color:var(--mut)}
+.note{font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 10px;margin:8px 0;line-height:1.5}
+/* itinerary */
+.day{margin-bottom:4px}
+.tl{position:relative;margin-left:8px;border-left:2px solid #e5e7eb;padding-left:14px}
+.st{position:relative;padding:6px 0;font-size:13px;line-height:1.45}
+.st:before{content:"";position:absolute;left:-21px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--c,#334155);border:2px solid #fff;box-shadow:0 0 0 1px #cbd5e1}
+.st .tm{font-weight:800;color:#334155;margin-right:6px;font-variant-numeric:tabular-nums}
+.sg{border-radius:10px;padding:8px 10px;margin:6px 0;font-size:12.5px;line-height:1.5;border:1px solid var(--line);background:var(--soft)}
+.sg.fit-順路{border-color:#86efac;background:#f0fdf4}.sg.fit-小繞路{border-color:#93c5fd;background:#eff6ff}
+.sg.fit-選配,.sg.fit-非演唱會組{border-color:#d8b4fe;background:#faf5ff}.sg.fit-衝突,.sg.fit-時段不合{border-color:#fecaca;background:#fef2f2}
+.sg.fit-待確認,.sg.fit-注意{border-color:#fde68a;background:#fffbeb}
+.fit{font-weight:800;font-size:11px;padding:1px 7px;border-radius:999px;background:#334155;color:#fff;margin-right:5px}
+.sg .go{color:#1d4ed8;text-decoration:underline;cursor:pointer}
+/* routes */
+.rt{border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:10px 11px;margin-bottom:9px}
+.rt.on{box-shadow:0 0 0 2px var(--c)}
+.rt .nm{font-weight:800;font-size:14.5px}
+.kv{font-size:12px;color:#334155;margin-top:3px;line-height:1.5}
+.ol{margin:6px 0 0 18px;font-size:12.5px;line-height:1.6}
+.act{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.btn{border:none;border-radius:9px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#fff;background:var(--ink);text-decoration:none;display:inline-block}
+.btn.g{background:#1d4ed8}.btn.o{background:#fff;color:var(--ink);border:1px solid #cbd5e1}
+/* stamps */
+.sp{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:7px}
+.sp input{width:22px;height:22px;margin-top:2px;accent-color:#d97706;flex:0 0 auto}
+.sp.done{background:#fffbeb;border-color:#fcd34d}
+.sp .nm{font-weight:800;font-size:13.5px}
+.prog{height:8px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin:6px 0 10px}
+.prog>i{display:block;height:100%;background:linear-gradient(90deg,#f59e0b,#dc2626)}
+/* map bits */
+.pin{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+.pin{font-size:14px}
+.dim .leaflet-marker-pane .pin,.dim .leaflet-marker-pane .mc{opacity:.32}
+.pin.star{outline:3px solid #fbbf24;outline-offset:-1px}
+.npin{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--c);color:var(--ink);font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.35)}
+.ipin{min-width:26px;height:26px;padding:0 5px;border-radius:13px;background:var(--c);color:#fff;border:2px solid #fff;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.leaflet-popup-content{margin:12px 13px;min-width:250px;max-width:300px;font-size:13px;line-height:1.5}
+.pp-t{font-weight:900;font-size:15px}
+.pp-en{font-size:11.5px;color:var(--mut)}
+.pp-ad{font-size:11.5px;background:#f1f5f9;border-radius:6px;padding:3px 6px;margin:5px 0}
+.pp-ev{border-top:1px solid var(--line);padding-top:6px;margin-top:6px}
+.pp-sc{max-height:46vh;overflow-y:auto}
+.leaflet-container a.btn,.act a.btn{color:#fff}.leaflet-container a.btn.o{color:var(--ink)}
+.mc{width:36px;height:36px;border-radius:50%;background:rgba(200,29,37,.25);display:flex;align-items:center;justify-content:center}
+.mc>div{width:28px;height:28px;border-radius:50%;background:#9f1239;color:#fff;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.mc.star>div{outline:3px solid #fbbf24}
+.legend{background:rgba(255,255,255,.95);padding:7px 9px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18);font-size:11.5px;line-height:1.65}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;z-index:3000;display:none;max-width:90vw}
+#menu{position:fixed;right:10px;top:58px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:3000;display:none;min-width:210px;overflow:hidden}
+#menu button,#menu a{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:11px 14px;font-size:14px;color:var(--ink);text-decoration:none}
+/* mobile: bottom sheet */
+@media (max-width:899px){
+  #body{flex-direction:column}
+  #panel{position:absolute;left:0;right:0;bottom:0;height:var(--sheet-h);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.22);transition:height .22s ease;padding-bottom:env(safe-area-inset-bottom)}
+  #panel.drag{transition:none}
+  #grab{flex:0 0 auto;height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
+  #grab:before{content:"";width:44px;height:5px;border-radius:9px;background:#cbd5e1}
+  #map{position:absolute;inset:0}
+  .leaflet-bottom{bottom:calc(var(--sheet-h) + 4px)}
+  .leaflet-control-layers-expanded{max-height:45vh;overflow:auto}
+}
+@media (max-width:899px) and (orientation:landscape) and (max-height:520px){
+  header{padding-top:calc(env(safe-area-inset-top) + 4px);padding-bottom:4px} header p{display:none} .hbtn{height:32px;min-width:34px}
+  #body{flex-direction:row} #panel{position:relative;height:auto;width:min(46vw,400px);border-radius:0;box-shadow:none;border-right:1px solid var(--line);order:-1;padding-left:env(safe-area-inset-left)}
+  #grab{display:none} #map{position:relative;inset:auto} .leaflet-bottom{bottom:0}
+}
+@media (max-width:359px){ header h1{font-size:13.5px} .tab{font-size:12px} .hbtn{min-width:34px;padding:0 6px} }
+@media (min-width:900px){
+  #panel{width:420px;border-right:1px solid var(--line);order:-1}
+  #grab{display:none}
+}
+@media (min-width:1400px){ #panel{width:460px} }
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="ttl">
+    <h1>BTS THE CITY ARIRANG · SINGAPORE 2026</h1>
+    <p id="sub">官方公告 11/24 更新版｜79 項活動・14 處集章點｜時間皆為 SGT</p>
+  </div>
+  <button class="hbtn" id="btnLoc" title="我的位置" aria-label="我的位置">📍</button>
+  <button class="hbtn" id="btnNight" title="夜間底圖" aria-label="夜間底圖">🌙</button>
+  <button class="hbtn" id="btnMenu" title="更多" aria-label="更多">⋯</button>
+</header>
+<div id="menu">
+  <button data-x="geojson">⬇︎ 匯出 GeoJSON</button>
+  <button data-x="kml">⬇︎ 匯出 KML（Google 我的地圖）</button>
+  <button data-x="csv">⬇︎ 匯出 CSV</button>
+  <button data-x="all">🗺️ 顯示全島範圍</button>
+  <a href="https://weverse.io/bts/notice/40721" target="_blank" rel="noopener">📄 官方 Weverse 公告 ↗</a>
+</div>
+<div id="body">
+  <div id="map"></div>
+  <aside id="panel">
+    <div id="grab" aria-label="拖曳調整面板高度"></div>
+    <nav class="tabs">
+      <button class="tab on" data-p="ev">活動</button>
+      <button class="tab" data-p="it">我的行程</button>
+      <button class="tab" data-p="rt">散步路線</button>
+      <button class="tab" data-p="sp">集章 <span id="spCnt"></span></button>
+    </nav>
+    <section class="pane on" id="p-ev">
+      <div class="sticky pad">
+        <input class="search" id="q" type="search" placeholder="搜尋地點、活動、店名…" autocomplete="off">
+        <div class="row" id="dateRow"></div>
+        <div class="row" id="catRow"></div>
+        <div class="row" id="flagRow"></div>
+        <div class="count" id="cnt"></div>
+      </div>
+      <div class="pad" id="list"></div>
+    </section>
+    <section class="pane" id="p-it">
+      <div class="sticky pad"><div class="row" id="dayRow"></div></div>
+      <div class="pad" id="itin"></div>
+    </section>
+    <section class="pane" id="p-rt"><div class="pad" id="routes"></div></section>
+    <section class="pane" id="p-sp"><div class="pad" id="stamps"></div></section>
+  </aside>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const D = {"venues":{"acm":["亞洲文明博物館","Asian Civilisations Museum",1.28745,103.85149,"1 Empress Pl, Singapore 179555","新加坡河沿岸",false],"albatross":["皇家信天翁號 Royal Albatross","Royal Albatross (RWS Waterfront)",1.2591,103.8203,"8 Sentosa Gateway（S.E.A. 海洋館後方碼頭）","聖淘沙／名勝世界",true],"altitudex":["AltitudeX 室內跳傘","AltitudeX Indoor Skydiving",1.25211,103.81753,"43 Siloso Beach Walk #01-01, Singapore 099010","聖淘沙／名勝世界",false],"amara":["Amara Singapore","Amara Singapore",1.27494,103.84366,"165 Tg Pagar Rd, Singapore 088539","牛車水／丹戎巴葛",false],"anderson":["安德遜橋","Anderson Bridge",1.28729,103.85299,"Fullerton Rd","新加坡河沿岸",false],"beach_stn":["聖淘沙捷運 海灘站","Sentosa Express — Beach Station",1.25165,103.81853,"Sentosa","聖淘沙／名勝世界",false],"cavenagh":["加文納橋","Cavenagh Bridge",1.28655,103.85235,"Fullerton Rd","新加坡河沿岸",false],"cbb":["Central Beach Bazaar","Central Beach Bazaar, Sentosa",1.2508,103.82,"Beach View, Sentosa","聖淘沙／名勝世界",true],"chagee_gb":["CHAGEE 濱海灣花園店","CHAGEE Gardens by the Bay",1.2812,103.8633,"Gardens by the Bay（實際店址以現場為準）","濱海灣",true],"changi_t2":["樟宜機場 T2","Changi Airport Terminal 2",1.3538,103.98875,"60 Airport Blvd","樟宜機場",false],"changi_t3":["樟宜機場 T3","Changi Airport Terminal 3",1.3565,103.98635,"65 Airport Blvd","樟宜機場",false],"clemenceau":["克里門梭橋","Clemenceau Bridge",1.29075,103.84243,"Clemenceau Ave","新加坡河沿岸",false],"coleman":["哥里門橋","Coleman Bridge",1.28978,103.84802,"Hill St / New Bridge Rd","新加坡河沿岸",false],"cqc":["克拉碼頭中心","Clarke Quay Central",1.28864,103.84657,"6 Eu Tong Sen St, Singapore 059817","新加坡河沿岸",false],"crockfords":["Crockfords Tower（Horatio）","Crockfords Tower, RWS",1.2556,103.8199,"8 Sentosa Gateway","聖淘沙／名勝世界",true],"csm":["City Square Mall","City Square Mall",1.31135,103.85657,"180 Kitchener Rd, Singapore 208539","市政區／博物館區",false],"east_plaza":["East Plaza（動物園入口外）","East Plaza, Mandai Wildlife EAST",1.4043,103.7915,"80 Mandai Lake Rd, Singapore 729826","萬態野生動物保護區",true],"elgin":["愛琴橋","Elgin Bridge",1.28906,103.84932,"North / South Bridge Rd","新加坡河沿岸",false],"equarius":["逸濠酒店","Equarius Hotel",1.2578,103.81674,"20 Sentosa Gateway, Singapore 098135","聖淘沙／名勝世界",false],"exploria":["Exploria（Mandai Wildlife EAST）","Exploria, Mandai Wildlife EAST",1.405,103.792,"80 Mandai Lake Rd","萬態野生動物保護區",true],"flyer":["新加坡摩天觀景輪","Singapore Flyer",1.2894,103.8631,"30 Raffles Ave, Singapore 039803","濱海灣",false],"fullerton":["浮爾頓酒店","The Fullerton Hotel Singapore",1.2862,103.85307,"1 Fullerton Square, Singapore 049178","新加坡河沿岸",false],"helix":["雙螺旋橋","The Helix Bridge",1.28752,103.86062,"Marina Bay","濱海灣",false],"imbiah":["英比奧山頂（纜車站）","Imbiah Lookout",1.25505,103.81678,"Imbiah Rd, Sentosa","聖淘沙／名勝世界",false],"ion":["ION Orchard","ION Orchard",1.30395,103.83191,"2 Orchard Turn, Singapore 238801","中峇魯／烏節路",false],"jewel":["星耀樟宜","Jewel Changi Airport",1.36022,103.98967,"78 Airport Blvd, Singapore 819666","樟宜機場",false],"laurus":["The Laurus","The Laurus, a Luxury Collection Resort",1.25754,103.81883,"28 Sentosa Gateway, Singapore 098139","聖淘沙／名勝世界",false],"merlion":["魚尾獅","The Merlion",1.28696,103.85446,"1 Fullerton Rd, Singapore 049213","濱海灣",false],"michael":["Hotel Michael（Syun／KA-MON／QUAN）","Hotel Michael, RWS",1.25513,103.82037,"8 Sentosa Gateway","聖淘沙／名勝世界",false],"millenia":["美年大廈","Millenia Tower",1.29263,103.8603,"1 Temasek Ave, Singapore 039192","濱海灣",false],"msp":["濱海南碼頭（快艇站）","Marina South Pier",1.27149,103.86277,"31 Marina Coastal Dr, Singapore 018988","濱海灣",false],"myeong":["Myeong In Jip（Golden Castle 大樓）","Myeong In Jip",1.28681,103.84774,"80 South Bridge Rd #01-01, Singapore 058710","新加坡河沿岸",false],"new_bahru":["New Bahru","New Bahru (46 & 58 Kim Yam Road)",1.2928,103.83907,"46 & 58 Kim Yam Rd, Singapore 239351","中峇魯／烏節路",false],"ngs":["新加坡國家美術館","National Gallery Singapore",1.29026,103.85147,"1 St. Andrew's Road, Singapore 178957","市政區／博物館區",false],"nms":["新加坡國家博物館","National Museum of Singapore",1.29655,103.84832,"93 Stamford Rd, Singapore 178897","市政區／博物館區",false],"oceanarium":["新加坡海洋館","Singapore Oceanarium",1.25835,103.82048,"24 Sentosa Gateway","聖淘沙／名勝世界",false],"ogw":["Orchardgateway（CHAGEE）","Orchardgateway",1.3007,103.8389,"277 Orchard Rd","中峇魯／烏節路",false],"ola":["Ola Beach Club（快艇站）","Ola Beach Club, Siloso Beach",1.25305,103.81543,"46 Siloso Beach Walk","聖淘沙／名勝世界",false],"one_full":["One Fullerton","One Fullerton",1.2857,103.85394,"1 Fullerton Rd, Singapore 049213","濱海灣",false],"ora":["Hotel Ora","Hotel Ora",1.25622,103.81896,"12 Sentosa Gateway, Singapore 098271","聖淘沙／名勝世界",false],"orchard_c":["烏節中央城","Orchard Central",1.30064,103.83992,"181 Orchard Rd, Singapore 238896","中峇魯／烏節路",false],"ord":["渥橋","Ord Bridge",1.29092,103.84403,"Clarke Quay","新加坡河沿岸",false],"oue":["OUE Bayfront","OUE Bayfront",1.28414,103.85314,"50 Collyer Quay, Singapore 049321","濱海灣",false],"outpost":["The Outpost Hotel（1-Altitude Coast）","1-Altitude Coast, The Outpost Hotel",1.25189,103.81972,"10 Artillery Ave, Sentosa","聖淘沙／名勝世界",false],"owa":["Owa Bistro（動物園入口）","Owa Bistro, Singapore Zoo Entrance",1.40459,103.79073,"80 Mandai Lake Rd","萬態野生動物保護區",false],"palawan_b":["巴拉灣海灘","Palawan Beach, Sentosa",1.2478,103.8237,"Palawan Beach, Sentosa","聖淘沙／名勝世界",true],"palawan_g":["巴拉灣草坪","Palawan Green, Sentosa",1.2506,103.81816,"Siloso Beach Walk","聖淘沙／名勝世界",false],"parkview":["Parkview Square（SG_GSS 3 樓）","SG_GSS, Level 3 Parkview Square",1.3002,103.85755,"600 North Bridge Rd, Singapore 188778","市政區／博物館區",false],"peranakan":["土生華人博物館","Peranakan Museum",1.29429,103.84911,"39 Armenian St, Singapore 179941","市政區／博物館區",false],"raffles":["萊佛士酒店（Long Bar／Courtyard）","Raffles Hotel Singapore",1.29468,103.85464,"328 North Bridge Rd, Singapore 188719","市政區／博物館區",false],"raffles_city":["萊佛士城（BreadTalk）","Raffles City Shopping Centre",1.2939,103.85334,"252 North Bridge Rd, Singapore 179103","市政區／博物館區",false],"riverside":["加冷河濱步道","Stadium Riverside Walk, The Kallang",1.30262,103.87227,"1 Stadium Drive, Singapore 397629","加冷體育城",false],"rwcc":["名勝世界會議中心","Resorts World Convention Centre",1.2565,103.8196,"8 Sentosa Gateway, Singapore 098269","聖淘沙／名勝世界",true],"sensory":["Sensoryscape","Sensoryscape, Sentosa",1.25321,103.81882,"3 Siloso Rd, Singapore 098977","聖淘沙／名勝世界",false],"siloso_pt":["西樂索角（纜車站）","Siloso Point",1.25769,103.81135,"Siloso Rd, Sentosa","聖淘沙／名勝世界",false],"sphere":["OCBC Square（Deloitte 球體）","The Deloitte Sphere at The Kallang, OCBC Square",1.30207,103.8736,"3 Stadium Walk, Singapore 397692","加冷體育城",false],"stadium":["新加坡國家體育場","National Stadium, The Kallang",1.30449,103.87434,"1 Stadium Dr, Singapore 397629","加冷體育城",false],"supertree":["濱海灣花園 擎天樹叢","Supertree Grove, Gardens by the Bay",1.282,103.86394,"18 Marina Gardens Dr, Singapore 018953","濱海灣",false],"taka":["高島屋 #B2-39A","Takashimaya Shopping Centre",1.30262,103.83453,"391 Orchard Rd, Singapore 238872","中峇魯／烏節路",false],"tampines":["淡濱尼廣場（BreadTalk）","Tampines Mall",1.3525,103.9446,"4 Tampines Central 5 #01-32","其他門市",true],"tiong_bahru":["TOAST BOX COFFEE HOUSE","Toast Box Coffee House, Seng Poh Rd",1.2846,103.8321,"58 Seng Poh Rd #01-31, Singapore 160058","牛車水／丹戎巴葛",true],"uss_hw":["環球影城 好萊塢湖","Lake Hollywood, Hollywood Zone, USS",1.255,103.8215,"8 Sentosa Gateway, Singapore 098269","聖淘沙／名勝世界",true],"uss_mummy":["環球影城 木乃伊復仇記","Revenge of the Mummy, Ancient Egypt Zone, USS",1.25312,103.82313,"8 Sentosa Gateway, Singapore 098269","聖淘沙／名勝世界",false],"vivo":["怡豐城 VivoCity","VivoCity",1.26437,103.82295,"1 HarbourFront Walk, Singapore 098585","聖淘沙／名勝世界",false],"weave":["WEAVE（Starbucks）","WEAVE, Resorts World Sentosa",1.257,103.8211,"26 Sentosa Gateway #01-221/222","聖淘沙／名勝世界",true],"wop":["World of Plants 免費觀賞點","World of Plants (Secret Life of Trees), Gardens by the Bay",1.28268,103.86495,"Gardens by the Bay","濱海灣",false],"zouk":["Zouk Singapore","Zouk Singapore (Mainroom)",1.29067,103.84602,"3C River Valley Rd, Clarke Quay","新加坡河沿岸",false]},"programs":[{"id":"P01","cat":"concert","t":"BTS WORLD TOUR 'ARIRANG' IN NATIONAL STADIUM SINGAPORE","zh":"世界巡演新加坡場（共 4 場）","v":["stadium"],"time":"場次時間依票面","fee":"ticket","dates":["2026-12-17","2026-12-19","2026-12-20","2026-12-22"]},{"id":"P02","cat":"madang","t":"ARMY 'MADANG' — CUSTOMIZE YOUR ARIRANG","zh":"粉絲廣場：客製化活動（需預約，細節另行公告）","v":[],"time":"11:00–18:00","fee":"resv","s":"2026-12-22","e":"2026-12-24","h":[["11:00","18:00"]],"tbd":1},{"id":"P03","cat":"madang","t":"Samsung Galaxy Experience Booth in ARMY 'MADANG'","zh":"三星體驗館：驗證到訪領限定周邊、Creative Studio 貼紙與現場照片列印","v":[],"time":"11:00–18:00","fee":"free","s":"2026-12-22","e":"2026-12-24","h":[["11:00","18:00"]],"stamp":1,"tbd":1},{"id":"P04","cat":"madang","t":"Photoism in ARMY 'MADANG'","zh":"Photoism 拍貼","v":[],"time":"11:00–18:00","fee":"spend","s":"2026-12-22","e":"2026-12-24","h":[["11:00","18:00"]],"tbd":1},{"id":"P05","cat":"madang","t":"Visa in ARMY 'MADANG'","zh":"Visa 攤位：個性測驗與紀念品","v":[],"time":"11:00–18:00","fee":"free","s":"2026-12-22","e":"2026-12-24","h":[["11:00","18:00"]],"stamp":1,"upd":1,"tbd":1},{"id":"P06","cat":"landmark","t":"Singapore ARIRANG Light-up","zh":"濱海灣與新加坡河 15 處地標主題紅光（濱海灣花園 23:00 起）","v":["anderson","acm","cavenagh","clemenceau","coleman","elgin","supertree","millenia","ord","oue","peranakan","flyer","fullerton","helix","merlion"],"time":"19:00–01:00（濱海灣花園 23:00–01:00）","fee":"free","s":"2026-12-08","e":"2026-12-22","h":[["19:00","25:00"]]},{"id":"P07","cat":"landmark","t":"BTS THE CITY Supertrees Light & Music Experience","zh":"擎天樹叢燈光音樂秀；World of Plants 免費觀賞，Supertree Grove 內需 Christmas Wonderland 門票","v":["supertree","wop"],"time":"21:35–21:50","fee":"mixed","s":"2026-12-12","e":"2026-12-22","h":[["21:35","21:50"]],"stamp":1,"upd":1},{"id":"P08","cat":"landmark","t":"BTS THE CITY ARIRANG Light & Music Showcase","zh":"星耀樟宜雨漩渦聲光秀（Forest Valley L1–L4 觀賞）","v":["jewel"],"time":"每晚 20:00、21:00","fee":"free","s":"2026-12-01","e":"2026-12-26","h":[["20:00","20:15"],["21:00","21:15"]]},{"id":"P09","cat":"landmark","t":"BTS THE CITY ARIRANG Welcome Experience","zh":"星耀樟宜 L4 拍照區與多處媒體點","v":["jewel"],"time":"10:00–22:00","fee":"free","s":"2026-12-01","e":"2026-12-26","h":[["10:00","22:00"]],"stamp":1},{"id":"P10","cat":"landmark","t":"National Stadium Roof Light-up","zh":"國家體育場屋頂亮燈（部分日期可能取消、時間依日而異）","v":["stadium"],"time":"19:30 起","fee":"free","s":"2026-12-08","e":"2026-12-22","h":[["19:30","23:59"]]},{"id":"P11","cat":"landmark","t":"BTS THE CITY ARIRANG Sphere","zh":"Deloitte 球體主題投影","v":["sphere"],"time":"07:00–22:00","fee":"free","s":"2026-12-08","e":"2026-12-22","h":[["07:00","22:00"]]},{"id":"P12","cat":"landmark","t":"National Museum Facade Light-up","zh":"國家博物館外牆亮燈","v":["nms"],"time":"19:30–24:00","fee":"free","s":"2026-12-16","e":"2026-12-23","h":[["19:30","24:00"]]},{"id":"P13","cat":"landmark","t":"BTS THE CITY ARIRANG Takeover @ New Bahru","zh":"在地品牌主題商品、餐點與體驗；含拍貼、免費拍照點與集章站","v":["new_bahru"],"time":"依各店營業時間","fee":"free","s":"2026-12-16","e":"2026-12-23","stamp":1},{"id":"P14","cat":"landmark","t":"Photo Moment: Bubble With Luv","zh":"46 Kim Yam Rd L1 戶外遊樂場，每 30 分鐘施放霧泡泡（免預約）","v":["new_bahru"],"time":"10:30–20:00（每 30 分）","fee":"free","s":"2026-12-16","e":"2026-12-23","h":[["10:30","20:00"]],"upd":1},{"id":"P15","cat":"landmark","t":"BTS THE CITY ARIRANG Fireworks at USS","zh":"好萊塢湖煙火（需環球影城門票）","v":["uss_hw"],"time":"12/4·5·11·12 時間待公布；12/16–12/25 21:00 起（12/21 除外）；12/21 Night Out 特別場 23:45；1/1–1/2 20:00","fee":"ticket","dates":["2026-12-04","2026-12-05","2026-12-11","2026-12-12","2026-12-16","2026-12-17","2026-12-18","2026-12-19","2026-12-20","2026-12-21","2026-12-22","2026-12-23","2026-12-24","2026-12-25","2027-01-01","2027-01-02"],"upd":1},{"id":"P16","cat":"landmark","t":"BTS THE CITY ARIRANG Lightscape at USS","zh":"古埃及區「木乃伊復仇記」外牆光雕（需環球影城門票）","v":["uss_mummy"],"time":"19:30 起","fee":"ticket","s":"2026-12-04","e":"2027-01-03","h":[["19:30","23:59"]],"stamp":1},{"id":"P17","cat":"landmark","t":"BTS THE CITY ARIRANG Giant Inflatable","zh":"巴拉灣海灘巨型充氣裝置","v":["palawan_b"],"time":"07:00–22:30","fee":"free","s":"2026-12-04","e":"2026-12-31","h":[["07:00","22:30"]]},{"id":"P18","cat":"activity","t":"AltitudeX – Flight Experience","zh":"室內跳傘；12/12–12/23 每日 12:00、17:00 飛行表演","v":["altitudex"],"time":"平日 11:00–21:00／週末假日 10:00–21:00","fee":"ticket","s":"2026-12-04","e":"2026-12-31","h":[["10:00","21:00"]],"upd":1},{"id":"P19","cat":"activity","t":"BTS THE CITY ARIRANG Dance Mirror","zh":"國家博物館 L1 Stamford Gallery 互動舞蹈鏡","v":["nms"],"time":"10:00–19:00","fee":"free","s":"2026-12-01","e":"2026-12-31","h":[["10:00","19:00"]],"stamp":1,"upd":1},{"id":"P20","cat":"activity","t":"BTS THE CITY ARIRANG Fan Village","zh":"名勝世界會議中心：Game／Taste／Beauty／Play 四區（需 Fan Village 門票，可能不退費）","v":["rwcc"],"time":"11:00–22:00","fee":"ticket","s":"2026-12-16","e":"2026-12-22","h":[["11:00","22:00"]],"stamp":1},{"id":"P21","cat":"activity","t":"BTS THE CITY ARIRANG Photo Points at Sentosa","zh":"Central Beach Bazaar 與 Palawan Green 主題裝飾、拍照區、主題階梯","v":["cbb","palawan_g"],"time":"07:00–22:30","fee":"free","s":"2026-12-04","e":"2026-12-31","h":[["07:00","22:30"]],"stamp":1},{"id":"P22","cat":"activity","t":"BTS THE CITY ARIRANG RUN at Sentosa","zh":"主題路跑（17:00 起跑；19:30–22:30 賽後派對）","v":["palawan_g","palawan_b"],"time":"15:30–22:30","fee":"ticket","dates":["2026-12-12"],"h":[["15:30","22:30"]],"upd":1},{"id":"P23","cat":"activity","t":"BTS THE CITY Onboard the Tall Ship @ Royal Albatross","zh":"停靠碼頭的主題帆船登船拍照（需購票）","v":["albatross"],"time":"09:00–17:00","fee":"ticket","s":"2026-12-16","e":"2026-12-22","h":[["09:00","17:00"]]},{"id":"P24","cat":"activity","t":"BTS THE CITY ARIRANG Tape Hammock at Sensoryscape","zh":"主題膠帶吊床裝置","v":["sensory"],"time":"07:00–22:30","fee":"free","s":"2026-12-04","e":"2026-12-31","h":[["07:00","22:30"]]},{"id":"P25","cat":"activity","t":"Crafune — Customize Luggage Tag","zh":"客製主題皮革行李吊牌（School Block #02-11）","v":["new_bahru"],"time":"10:00–19:00","fee":"spend","s":"2026-12-09","e":"2026-12-31","h":[["10:00","19:00"]],"upd":1},{"id":"P26","cat":"activity","t":"Make by GINLEE — Pleated Bag & Charms","zh":"客製主題褶皺包與吊飾（New Bahru #02-10／高島屋 #B2-39A）","v":["new_bahru","taka"],"time":"11:00–20:00","fee":"spend","s":"2026-12-12","e":"2026-12-25","h":[["11:00","20:00"]],"upd":1},{"id":"P27","cat":"activity","t":"Pop Pop Pets — Pet Charms","zh":"客製主題寵物吊飾（School Block #03-09）","v":["new_bahru"],"time":"11:00–19:00","fee":"spend","s":"2026-12-04","e":"2026-12-31","h":[["11:00","19:00"]],"upd":1},{"id":"P28","cat":"activity","t":"DIY Station: Come stamp it, put your stamp on it","zh":"School Block L3–L4 中央樓梯自助印章站（免預約）","v":["new_bahru"],"time":"依園區開放時間","fee":"free","s":"2026-12-16","e":"2026-12-23","upd":1},{"id":"P29","cat":"activity","t":"East Plaza Steps Takeover","zh":"動物園入口外 East Plaza 主題階梯","v":["east_plaza"],"time":"08:30–24:00","fee":"free","s":"2026-12-04","e":"2026-12-27","h":[["08:30","24:00"]]},{"id":"P30","cat":"activity","t":"Exploria: A World in Connection","zh":"沉浸式自然互動體驗（需 Exploria 門票）","v":["exploria"],"time":"平日 12:00–20:00（末入場 19:00）／週末假日 11:00–21:00（末入場 20:00）","fee":"ticket","s":"2026-12-06","e":"2026-12-27","h":[["11:00","21:00"]],"upd":1},{"id":"P31","cat":"activity","t":"Gallery Photo booth","zh":"Supreme Court Wing L1 主題拍貼（需 Art Trail 或 Gallery Rave 票）","v":["ngs"],"time":"10:00–19:00","fee":"ticket","s":"2026-12-11","e":"2026-12-31","h":[["10:00","19:00"]]},{"id":"P32","cat":"activity","t":"Love Quarter","zh":"B1 Padang Atrium 互動鏡面裝置（免費）","v":["ngs"],"time":"10:00–19:00","fee":"free","s":"2026-12-11","e":"2026-12-31","h":[["10:00","19:00"]],"upd":1},{"id":"P33","cat":"activity","t":"Photo Booth: Squeeze in, body-body","zh":"School Block L5（Hideaway 旁）主題拍貼機（免預約）","v":["new_bahru"],"time":"依園區開放時間","fee":"spend","s":"2026-12-16","e":"2026-12-23","upd":1},{"id":"P34","cat":"activity","t":"Photoism（THE CITY 限定框）","zh":"City Square Mall／SG_GSS（Parkview Square L3 藝品店內）","v":["csm","parkview"],"time":"依商場營業時間","fee":"spend","s":"2026-12-01","e":"2026-12-31"},{"id":"P35","cat":"activity","t":"Pop After Pop | BTS THE CITY ARIRANG Art Trail","zh":"美術館主題藝術路徑（觀展需購票；集章免門票）","v":["ngs"],"time":"10:00–19:00","fee":"mixed","s":"2026-12-11","e":"2026-12-31","h":[["10:00","19:00"]],"stamp":1,"upd":1},{"id":"P36","cat":"activity","t":"THE CITY Photo Spot at East Plaza","zh":"動物園入口外主題拍照點","v":["east_plaza"],"time":"08:30–24:00","fee":"free","s":"2026-12-04","e":"2026-12-27","h":[["08:30","24:00"]],"stamp":1},{"id":"P37","cat":"activity","t":"The Kallang Feel Alive Zone","zh":"Fan Chant／Recharge／Groove 三工作室與拍照區","v":["riverside"],"time":"12:00–20:00","fee":"free","s":"2026-12-09","e":"2026-12-22","h":[["12:00","20:00"]],"stamp":1},{"id":"P38","cat":"party","t":"BTS THE CITY ARIRANG Gallery Rave","zh":"國家美術館 City Hall Wing L2 夜間派對（需購票）","v":["ngs"],"time":"20:00–23:00","fee":"ticket","dates":["2026-12-18","2026-12-19"],"h":[["20:00","23:00"]],"upd":1},{"id":"P39","cat":"party","t":"BTS THE CITY ARIRANG Night Out at USS","zh":"環球影城夜間包場（需專場票，可能不退費）","v":["uss_hw"],"time":"12/21 20:00 – 12/22 01:00","fee":"ticket","dates":["2026-12-21"],"h":[["20:00","25:00"]]},{"id":"P40","cat":"party","t":"BTS THE CITY ARIRANG Rave & Drone Party","zh":"巴拉灣草坪／海灘；19:30 起 DJ，20:30–20:40 無人機秀（需購票）","v":["palawan_g"],"time":"17:30–22:30","fee":"ticket","s":"2026-12-18","e":"2026-12-20","h":[["17:30","22:30"]]},{"id":"P41","cat":"party","t":"BTS THE CITY Cocktail Party on Deck","zh":"皇家信天翁號甲板派對（暢飲＋DJ，需購票）","v":["albatross"],"time":"22:00–01:00","fee":"ticket","s":"2026-12-16","e":"2026-12-22","h":[["22:00","25:00"]]},{"id":"P42","cat":"party","t":"Party in the City @ Zouk — Countdown Night","zh":"持演唱會門票可免費入場（視容量）","v":["zouk"],"time":"12/16 22:00 – 12/17 03:00","fee":"mixed","dates":["2026-12-16"],"h":[["22:00","27:00"]],"stamp":1,"upd":1},{"id":"P43","cat":"party","t":"Party in the City @ Zouk — Encore Night","zh":"持演唱會門票可免費入場（視容量）；購票連結待公布","v":["zouk"],"time":"12/23 22:00 – 12/24 03:00","fee":"mixed","dates":["2026-12-23"],"h":[["22:00","27:00"]],"stamp":1},{"id":"P44","cat":"party","t":"Random Play Dance with KPOP Dance Off","zh":"國家博物館入口隨機舞蹈","v":["nms"],"time":"19:30–21:30","fee":"free","dates":["2026-12-18"],"h":[["19:30","21:30"]]},{"id":"P45","cat":"shopping","t":"BTS POP-UP : ARIRANG IN SINGAPORE @ NGS","zh":"國家美術館 Supreme Court Terrace 快閃店（參加方式另行公告）","v":["ngs"],"time":"10:00–19:00（12/11–12/22 延長至 22:00）","fee":"spend","s":"2026-12-04","e":"2026-12-31","h":[["10:00","22:00"]],"upd":1},{"id":"P46","cat":"shopping","t":"BTS POP-UP : ARIRANG IN SINGAPORE @ RWS","zh":"名勝世界會議中心快閃店（參加方式另行公告）","v":["rwcc"],"time":"11:00–22:00","fee":"spend","s":"2026-12-16","e":"2026-12-22","h":[["11:00","22:00"]],"upd":1},{"id":"P47","cat":"shopping","t":"BTS THE CITY Holiday Escape","zh":"烏節中央城：沉浸式拍照點、活動、消費滿額贈限定禮","v":["orchard_c"],"time":"11:00–21:00","fee":"free","s":"2026-12-01","e":"2026-12-31","h":[["11:00","21:00"]],"stamp":1},{"id":"P48","cat":"shopping","t":"BTS THE CITY Holiday Message Zone","zh":"克拉碼頭中心：留言、手作紀念品、消費滿額贈","v":["cqc"],"time":"11:00–21:00","fee":"free","s":"2026-12-01","e":"2026-12-31","h":[["11:00","21:00"]]},{"id":"P49","cat":"mobility","t":"Themed Cable Car — Sentosa Line","zh":"聖淘沙線主題纜車（英比奧、Sensoryscape、西樂索角；需購票）","v":["imbiah","siloso_pt"],"time":"08:45–22:00","fee":"ticket","s":"2026-12-03","e":"2027-01-03","h":[["08:45","22:00"]],"upd":1},{"id":"P50","cat":"mobility","t":"Themed Sentosa Express","zh":"主題聖淘沙捷運（怡豐城站⇄海灘站；需購票）","v":["vivo","beach_stn"],"time":"07:00–24:00","fee":"ticket","s":"2026-12-04","e":"2027-01-03","h":[["07:00","24:00"]],"upd":1},{"id":"P51","cat":"mobility","t":"BTS THE CITY Ride the Wave","zh":"主題快艇：濱海南碼頭 09:00／Ola Beach 09:25／RWS 09:45 起，每 30 分一班（需購票）","v":["msp","ola","albatross"],"time":"09:00–22:00","fee":"ticket","s":"2026-12-16","e":"2026-12-22","h":[["09:00","22:00"]]},{"id":"P52","cat":"mobility","t":"HelloRide BTS THE CITY bicycle","zh":"全島主題共享單車，掃碼騎乘完成可抽獎","v":[],"time":"全天","fee":"spend","s":"2026-12-01","e":"2026-12-31"},{"id":"P53","cat":"mobility","t":"SimplyGo BTS THE CITY EZ-Link Card","zh":"主題 EZ-Link 卡：樟宜 T2／T3 SimplyGo 售票機；SMRT 13 站客服櫃台（樟宜機場、Khatib、City Hall、Dhoby Ghaut、Bras Basah、HarbourFront、Kallang、Stadium、Raffles Place、Marina Bay、Orchard、Somerset、Bayfront）","v":["changi_t3","changi_t2"],"time":"售票機／櫃台營業時間","fee":"spend","s":"2026-12-08","e":"2026-12-31"},{"id":"P54","cat":"stay","t":"Amara Singapore — BTS THE CITY Room Package","zh":"主題房型（入住 12/14–12/31；訂房 11/16–12/30）","v":["amara"],"time":"—","fee":"ticket","s":"2026-12-14","e":"2026-12-31","upd":1},{"id":"P55","cat":"stay","t":"Amara Singapore — Photo Wall @Lobby","zh":"大廳主題照片牆（所有人皆可拍）","v":["amara"],"time":"大廳開放時間","fee":"free","s":"2026-12-07","e":"2026-12-30","upd":1},{"id":"P56","cat":"stay","t":"Equarius Hotel","zh":"主題住宿（需訂房）","v":["equarius"],"time":"—","fee":"ticket","s":"2026-12-15","e":"2026-12-23"},{"id":"P57","cat":"stay","t":"Hotel Ora","zh":"主題住宿（需訂房）","v":["ora"],"time":"—","fee":"ticket","s":"2026-12-15","e":"2026-12-23"},{"id":"P58","cat":"stay","t":"The Laurus","zh":"主題住宿（需訂房）","v":["laurus"],"time":"—","fee":"ticket","s":"2026-12-15","e":"2026-12-23"},{"id":"P59","cat":"fnb","t":"Owa Bistro","zh":"動物園入口聯名餐飲","v":["owa"],"time":"08:00–21:00","fee":"spend","s":"2026-12-04","e":"2026-12-27","h":[["08:00","21:00"]]},{"id":"P60","cat":"fnb","t":"Bakery Brera","zh":"國家美術館 #01-06","v":["ngs"],"time":"09:00–19:00","fee":"spend","s":"2026-12-11","e":"2026-12-31","h":[["09:00","19:00"]]},{"id":"P61","cat":"fnb","t":"Milli — Sky Dining, Bar & Lounge","zh":"國家美術館 #05-02、#06-01","v":["ngs"],"time":"11:00–04:00","fee":"spend","s":"2026-12-11","e":"2026-12-31","h":[["11:00","28:00"]]},{"id":"P62","cat":"fnb","t":"Rempapa","zh":"國家美術館","v":["ngs"],"time":"10:00–19:00","fee":"spend","s":"2026-12-11","e":"2026-12-31","h":[["10:00","19:00"]]},{"id":"P63","cat":"fnb","t":"ARTICHOKE Pizza Parlor","zh":"New Bahru #01-02","v":["new_bahru"],"time":"10:00–19:00","fee":"spend","s":"2026-12-16","e":"2026-12-23","h":[["10:00","19:00"]],"upd":1},{"id":"P64","cat":"fnb","t":"ATIPICO | ROOM #15","zh":"New Bahru #01-15（週一公休）","v":["new_bahru"],"time":"09:00–18:00（週一休）","fee":"spend","s":"2026-12-01","e":"2026-12-31","h":[["09:00","18:00"]],"closed_dow":[1],"upd":1},{"id":"P65","cat":"fnb","t":"Parlour Gelato","zh":"New Bahru #04-01","v":["new_bahru"],"time":"12:00–21:00","fee":"spend","s":"2026-12-01","e":"2026-12-31","h":[["12:00","21:00"]],"upd":1},{"id":"P66","cat":"fnb","t":"Syun","zh":"Hotel Michael L2（特別菜單時段待確認）","v":["michael"],"time":"待確認","fee":"spend","s":"2026-12-15","e":"2026-12-23","upd":1},{"id":"P67","cat":"fnb","t":"KA-MON","zh":"Hotel Michael L1（特別菜單時段待確認）","v":["michael"],"time":"待確認","fee":"spend","s":"2026-12-15","e":"2026-12-23","upd":1},{"id":"P68","cat":"fnb","t":"Horatio","zh":"Crockfords Tower L2（時段與公休待確認）","v":["crockfords"],"time":"待確認","fee":"spend","s":"2026-12-15","e":"2026-12-23","upd":1},{"id":"P69","cat":"fnb","t":"QUAN Hotpot","zh":"Hotel Michael L1（特別菜單時段待確認）","v":["michael"],"time":"待確認","fee":"spend","s":"2026-12-15","e":"2026-12-23","upd":1},{"id":"P70","cat":"fnb","t":"The Laurus In-Room Dining","zh":"限 The Laurus 住客","v":["laurus"],"time":"待確認","fee":"spend","s":"2026-12-15","e":"2026-12-23","upd":1},{"id":"P71","cat":"fnb","t":"1-Altitude Coast","zh":"The Outpost Hotel 頂樓 L7","v":["outpost"],"time":"週一二 11:00–22:00；週三四日 11:00–24:00；週五六 11:00–02:00","fee":"spend","s":"2026-12-04","e":"2026-12-23","h":[["11:00","22:00"]],"upd":1},{"id":"P72","cat":"fnb","t":"BreadTalk","zh":"全新加坡門市；主力店：萊佛士城、淡濱尼廣場、怡豐城","v":["raffles_city","tampines","vivo"],"time":"依門市","fee":"spend","s":"2026-12-04","e":"2026-12-31"},{"id":"P73","cat":"fnb","t":"BTS THE CITY Dinner on Deck @ Royal Albatross","zh":"韓式國際自助餐＋迎賓飲品（需購票）","v":["albatross"],"time":"17:00–21:30","fee":"ticket","s":"2026-12-16","e":"2026-12-22","h":[["17:00","21:30"]]},{"id":"P74","cat":"fnb","t":"BTS THE CITY F&B Collaboration @ Amara","zh":"Element／Element on Tras Street／Cafe Oriental（訂位連結見官方）","v":["amara"],"time":"依餐廳","fee":"spend","s":"2026-12-01","e":"2026-12-31","upd":1},{"id":"P75","cat":"fnb","t":"CHAGEE","zh":"全門市聯名飲品與周邊組合；特別體驗區：樟宜 T2、Orchardgateway、濱海灣花園（17:30 後需門票）","v":["changi_t2","ogw","chagee_gb"],"time":"依門市","fee":"spend","s":"2026-12-11","e":"2026-12-31","upd":1},{"id":"P76","cat":"fnb","t":"Myeong In Jip","zh":"韓式料理（80 South Bridge Rd）","v":["myeong"],"time":"依餐廳","fee":"spend","s":"2026-12-01","e":"2026-12-31"},{"id":"P77","cat":"fnb","t":"Raffles Hotel Long Bar & Raffles Courtyard","zh":"Long Bar：ARIRANG Sling（僅現場候位）；Courtyard：ARIRANG Sling＋韓式辣醬炸雞配鹹蛋黃薯條","v":["raffles"],"time":"依餐廳","fee":"spend","s":"2026-12-01","e":"2026-12-23"},{"id":"P78","cat":"fnb","t":"STARBUCKS","zh":"全門市聯名飲品與周邊組合；旗艦體驗店：星耀樟宜 #02-204；主力店：ION、WEAVE RWS、怡豐城、One Fullerton","v":["jewel","ion","weave","vivo","one_full"],"time":"依門市","fee":"spend","s":"2026-12-01","e":"2026-12-31"},{"id":"P79","cat":"fnb","t":"TOAST BOX","zh":"全門市；主力店：ION B4、Coffee House（58 Seng Poh Rd）、怡豐城 B2","v":["ion","tiong_bahru","vivo"],"time":"依門市","fee":"spend","s":"2026-12-04","e":"2026-12-31","upd":1}],"cats":{"concert":["演唱會","#7c3aed"],"madang":["ARMY 'MADANG'","#db2777"],"landmark":["地標燈光","#dc2626"],"activity":["活動體驗","#2563eb"],"party":["派對","#c026d3"],"shopping":["快閃購物","#0891b2"],"mobility":["交通主題","#0d9488"],"stay":["住宿","#64748b"],"fnb":["聯名餐飲","#ea580c"]},"zones":["加冷體育城","濱海灣","新加坡河沿岸","市政區／博物館區","中峇魯／烏節路","牛車水／丹戎巴葛","聖淘沙／名勝世界","樟宜機場","萬態野生動物保護區","其他門市"],"routes":[{"id":"R1A","name":"夜線① 河岸六橋紅光線","color":"#f43f5e","when":"19:00–01:00（12/8–12/22）；12/16–12/23 加看國家博物館外牆 19:30–24:00","stops":["nms","peranakan","clemenceau","ord","coleman","elgin","acm"],"tip":"由 Bras Basah 站出發，沿 Fort Canning 下到克拉碼頭；Clemenceau→Ord→Coleman→Elgin 四橋沿河岸步道直行，接夜線②。","d":3718,"g":[[1.29639,103.84813],[1.29604,103.84839],[1.29583,103.84831],[1.29583,103.84872],[1.29575,103.84881],[1.29581,103.84904],[1.29601,103.84915],[1.29618,103.84936],[1.29568,103.84946],[1.29513,103.84979],[1.2943,103.84935],[1.29439,103.84916],[1.2943,103.84935],[1.29342,103.84883],[1.29344,103.84867],[1.29339,103.84859],[1.29333,103.84863],[1.29323,103.84839],[1.29319,103.84841],[1.29322,103.84836],[1.29314,103.84833],[1.29319,103.84831],[1.29307,103.84794],[1.29228,103.84805],[1.29208,103.84796],[1.29204,103.84775],[1.29219,103.84762],[1.29189,103.84709],[1.29192,103.84686],[1.29237,103.84647],[1.29266,103.84644],[1.29306,103.84604],[1.29309,103.84591],[1.29288,103.84565],[1.29348,103.84538],[1.29356,103.84505],[1.29354,103.84488],[1.29348,103.84488],[1.29333,103.84459],[1.29283,103.84429],[1.29322,103.84366],[1.29243,103.84327],[1.29167,103.84276],[1.29041,103.84207],[1.29041,103.84178],[1.29049,103.84275],[1.29065,103.8433],[1.29084,103.8436],[1.29084,103.84382],[1.29076,103.84395],[1.29112,103.84416],[1.29071,103.84466],[1.29054,103.84474],[1.29061,103.84479],[1.29,103.8461],[1.29012,103.84621],[1.29025,103.84682],[1.29017,103.84692],[1.29017,103.84736],[1.29005,103.84792],[1.29013,103.84806],[1.29009,103.84836],[1.28973,103.84808],[1.29009,103.84836],[1.28946,103.84941],[1.28936,103.84941],[1.28886,103.84908],[1.28875,103.8491],[1.28879,103.84918],[1.2901,103.85009],[1.28921,103.85121],[1.28914,103.8512],[1.28852,103.85209],[1.28779,103.85156],[1.2877,103.85159],[1.28754,103.85148],[1.28751,103.85153]],"from":"Bras Basah 站","to":"亞洲文明博物館"},{"id":"R1B","name":"夜線② 濱海灣紅光精華線","color":"#e11d48","when":"19:00–01:00（12/8–12/22）","stops":["acm","cavenagh","fullerton","oue","merlion","anderson","helix","flyer","millenia"],"tip":"魚尾獅公園可同時拍到 Fullerton、OUE Bayfront、Anderson 橋；經金禧橋過河到濱海藝術中心，再走雙螺旋橋。終點 Promenade 站。","d":4466,"g":[[1.28751,103.85153],[1.28754,103.85148],[1.2877,103.85159],[1.28779,103.85156],[1.28741,103.8521],[1.28725,103.85198],[1.28701,103.85198],[1.28689,103.85219],[1.28618,103.85263],[1.28562,103.85288],[1.28529,103.85287],[1.28534,103.85273],[1.28529,103.85271],[1.28515,103.85304],[1.28416,103.85276],[1.28378,103.85263],[1.2838,103.85259],[1.28387,103.85261],[1.28366,103.85322],[1.28385,103.85319],[1.28389,103.85308],[1.2842,103.8532],[1.28407,103.8532],[1.28418,103.85326],[1.28425,103.85343],[1.2847,103.85348],[1.28491,103.85357],[1.28501,103.85395],[1.28642,103.85444],[1.28695,103.85441],[1.28696,103.85446],[1.28695,103.85441],[1.28735,103.85434],[1.28779,103.85433],[1.28813,103.85438],[1.2886,103.85457],[1.2889,103.85478],[1.28891,103.85546],[1.289,103.85547],[1.28899,103.85574],[1.28905,103.85566],[1.28927,103.8558],[1.28927,103.8559],[1.28935,103.85597],[1.28947,103.85592],[1.28954,103.85598],[1.28953,103.85609],[1.28942,103.85613],[1.28939,103.85651],[1.28973,103.85653],[1.28972,103.85683],[1.28979,103.85699],[1.28975,103.85733],[1.28965,103.85732],[1.28964,103.85741],[1.28949,103.86034],[1.28933,103.86038],[1.28926,103.86027],[1.28905,103.86026],[1.28838,103.86051],[1.28752,103.86062],[1.28838,103.86051],[1.28905,103.86026],[1.28926,103.86027],[1.28933,103.86038],[1.28949,103.86034],[1.28948,103.86063],[1.28939,103.8607],[1.28944,103.86077],[1.28943,103.86107],[1.28962,103.86108],[1.28954,103.86203],[1.28976,103.862],[1.29011,103.86208],[1.29009,103.86214],[1.28995,103.8621],[1.28992,103.86217],[1.28977,103.86211],[1.2897,103.86219],[1.28981,103.86233],[1.28977,103.86242],[1.28999,103.8625],[1.28963,103.86289],[1.28999,103.8625],[1.28977,103.86242],[1.28981,103.86233],[1.2897,103.86219],[1.28977,103.86211],[1.28992,103.86217],[1.28995,103.8621],[1.29009,103.86214],[1.29011,103.86208],[1.28976,103.862],[1.28954,103.86203],[1.28963,103.86101],[1.29141,103.86098],[1.29142,103.86076],[1.29157,103.86065],[1.2915,103.86051],[1.29166,103.86039],[1.29176,103.86053],[1.29209,103.86054],[1.29211,103.86022],[1.29231,103.85987],[1.29285,103.85989],[1.29273,103.86014],[1.29285,103.85989],[1.29231,103.85987],[1.29211,103.86022],[1.29209,103.86054],[1.29176,103.86053],[1.29169,103.86039],[1.2915,103.86051],[1.29157,103.86065],[1.29142,103.86076],[1.29141,103.86098],[1.29147,103.86109],[1.2931,103.86095]],"from":"亞洲文明博物館","to":"Promenade 站"},{"id":"R1C","name":"夜線③ 23:00 濱海灣花園加映","color":"#be123c","when":"21:35 擎天樹燈光秀；23:00–01:00 花園紅光","stops":["helix","wop","supertree"],"tip":"想看 21:35 BTS 版擎天樹秀可先走本線；World of Plants（Secret Life of Trees 等）為免費觀賞點，Supertree Grove 內需聖誕門票。","d":1776,"g":[[1.28752,103.86062],[1.28715,103.86058],[1.28714,103.86068],[1.2855,103.86066],[1.28496,103.86052],[1.28472,103.86053],[1.28412,103.86028],[1.28413,103.86008],[1.28407,103.86002],[1.28337,103.85958],[1.28306,103.85961],[1.28299,103.85969],[1.28255,103.85942],[1.28228,103.85982],[1.28216,103.85977],[1.28206,103.85984],[1.28146,103.86074],[1.28201,103.86098],[1.28199,103.86111],[1.28207,103.86128],[1.28229,103.86148],[1.28234,103.86144],[1.2824,103.86154],[1.28247,103.86154],[1.2824,103.86172],[1.28258,103.86189],[1.2824,103.86288],[1.28261,103.86334],[1.28244,103.86348],[1.28265,103.86383],[1.28267,103.86408],[1.28276,103.86412],[1.2828,103.86431],[1.28301,103.86468],[1.28328,103.8649],[1.28322,103.8651],[1.28268,103.86496],[1.28177,103.86501],[1.28184,103.86471],[1.28199,103.86469],[1.28199,103.86441],[1.28191,103.86431],[1.28211,103.86395]],"from":"雙螺旋橋","to":"擎天樹叢"},{"id":"R2","name":"日線 市政博物館區集章線","color":"#2563eb","when":"10:00–19:00（Dance Mirror、Art Trail 開放時間）","stops":["nms","peranakan","raffles","ngs","cavenagh","myeong","cqc"],"tip":"起點 Bras Basah 站。國家博物館 Dance Mirror★ → 國家美術館 Art Trail★（集章免門票）、Love Quarter、快閃店 → 河畔韓式午餐 → 克拉碼頭中心留言區。","d":4676,"g":[[1.29697,103.8506],[1.29679,103.85013],[1.29633,103.84974],[1.29612,103.84939],[1.29618,103.84936],[1.29601,103.84915],[1.29582,103.84906],[1.29575,103.84881],[1.29583,103.84872],[1.29583,103.84831],[1.29604,103.84839],[1.29639,103.84813],[1.29604,103.84839],[1.29583,103.84831],[1.29583,103.84872],[1.29575,103.84881],[1.29581,103.84904],[1.29601,103.84915],[1.29618,103.84936],[1.29568,103.84946],[1.29513,103.84979],[1.2943,103.84935],[1.29439,103.84916],[1.2943,103.84935],[1.29513,103.84979],[1.29452,103.85076],[1.29595,103.85209],[1.29459,103.85393],[1.29484,103.85411],[1.29454,103.85453],[1.29456,103.85464],[1.29466,103.8547],[1.29456,103.85464],[1.29446,103.85471],[1.29416,103.85449],[1.29407,103.8546],[1.29385,103.85448],[1.29369,103.85471],[1.29266,103.85407],[1.29256,103.85398],[1.29256,103.85385],[1.29243,103.85374],[1.29251,103.85363],[1.29242,103.85337],[1.29231,103.85325],[1.29069,103.8524],[1.29079,103.85223],[1.29099,103.85226],[1.29129,103.8517],[1.28965,103.85079],[1.28934,103.85118],[1.28927,103.85112],[1.28921,103.85121],[1.28914,103.8512],[1.28852,103.85209],[1.28834,103.85226],[1.28775,103.85234],[1.28761,103.85247],[1.28751,103.85248],[1.28735,103.85233],[1.28729,103.85242],[1.28691,103.85217],[1.28625,103.85254],[1.28615,103.85248],[1.28594,103.85215],[1.28563,103.85147],[1.28502,103.85139],[1.28515,103.85019],[1.28537,103.84982],[1.28563,103.84973],[1.28563,103.84958],[1.2857,103.84958],[1.28598,103.84904],[1.28666,103.84751],[1.28687,103.84764],[1.28666,103.84751],[1.28733,103.84624],[1.28716,103.8461],[1.28736,103.8458],[1.28833,103.84659],[1.2885,103.84644]],"from":"Bras Basah 站","to":"克拉碼頭中心"},{"id":"R3","name":"加冷演唱會日線","color":"#7c3aed","when":"12:00–20:00（Feel Alive Zone）；19:30 屋頂亮燈","stops":["sphere","riverside","stadium"],"tip":"Stadium 站出站 → OCBC Square 球體 → Kallang Wave Mall → Feel Alive Zone★ → 體育場。演唱會日人潮大，建議 16:00 前完成集章。","d":1444,"g":[[1.30293,103.87528],[1.30267,103.87459],[1.30266,103.87427],[1.30229,103.87417],[1.30206,103.8736],[1.30216,103.87385],[1.30254,103.87369],[1.30282,103.8737],[1.30299,103.87351],[1.30316,103.87358],[1.30339,103.87322],[1.30357,103.87309],[1.30304,103.87238],[1.3027,103.87269],[1.30209,103.87226],[1.30259,103.87214],[1.30209,103.87226],[1.3027,103.87269],[1.30282,103.87256],[1.30339,103.87322],[1.30307,103.87379],[1.30315,103.87383],[1.30307,103.87403],[1.30307,103.87449],[1.30321,103.87494],[1.30349,103.87531],[1.30388,103.87557],[1.30433,103.87569],[1.30479,103.87565],[1.30501,103.87556]],"from":"Stadium 站","to":"國家體育場"},{"id":"R4","name":"名勝世界 RWS 線","color":"#0891b2","when":"11:00–22:00（Fan Village、快閃店）；19:30 光雕、21:00 煙火","stops":["oceanarium","albatross","rwcc","uss_hw","uss_mummy"],"tip":"由聖淘沙捷運 Resorts World 站出發。煙火後 5 分鐘步行回會議中心，可趕在 22:00 前逛 Fan Village／快閃店。","d":1879,"g":[[1.25648,103.8212],[1.25659,103.82098],[1.2564,103.82072],[1.25639,103.82045],[1.2568,103.82043],[1.257,103.8205],[1.25718,103.8202],[1.25762,103.82062],[1.25748,103.82071],[1.25745,103.82081],[1.25755,103.82107],[1.25798,103.82088],[1.25832,103.82083],[1.25864,103.8207],[1.25887,103.82049],[1.25894,103.82024],[1.25887,103.82049],[1.25864,103.8207],[1.25832,103.82083],[1.25798,103.82088],[1.25755,103.82107],[1.25745,103.82081],[1.25748,103.82071],[1.25762,103.82062],[1.25735,103.82032],[1.25696,103.82011],[1.25652,103.82012],[1.25625,103.82019],[1.256,103.82079],[1.25559,103.82091],[1.25557,103.82105],[1.25559,103.82091],[1.256,103.82079],[1.25605,103.82072],[1.25578,103.82034],[1.2558,103.82027],[1.25496,103.81974],[1.25484,103.81978],[1.25482,103.81968],[1.25459,103.81954],[1.25381,103.82044],[1.25388,103.82052],[1.2537,103.82068],[1.25283,103.82192],[1.2527,103.82307]],"from":"聖淘沙捷運 Resorts World 站","to":"木乃伊復仇記"},{"id":"R5","name":"聖淘沙海灘線","color":"#0d9488","when":"07:00–22:30","stops":["sensory","altitudex","beach_stn","palawan_g","cbb","palawan_b"],"tip":"Sensoryscape 吊床 → AltitudeX（12/12–12/23 12:00、17:00 飛行表演）→ Central Beach Bazaar／Palawan Green 拍照點★ → 巴拉灣海灘充氣裝置。","d":1373,"g":[[1.25321,103.81881],[1.25241,103.8183],[1.25209,103.81801],[1.25212,103.81795],[1.25186,103.81777],[1.25192,103.81754],[1.25185,103.81753],[1.2517,103.81792],[1.25165,103.81792],[1.25165,103.81853],[1.25156,103.81849],[1.25157,103.81807],[1.25104,103.81778],[1.25073,103.81778],[1.25069,103.8181],[1.2506,103.81809],[1.25069,103.8181],[1.25072,103.81868],[1.25067,103.81872],[1.25088,103.81897],[1.25083,103.82],[1.25069,103.82004],[1.25021,103.82063],[1.25007,103.82096],[1.24979,103.82123],[1.2498,103.82134],[1.24932,103.82212],[1.24876,103.82242],[1.24862,103.82256],[1.2482,103.82318],[1.24793,103.8238],[1.2478,103.82371]],"from":"Sensoryscape","to":"巴拉灣海灘"},{"id":"R6","name":"New Bahru＋烏節路線","color":"#ca8a04","when":"10:30–20:00（New Bahru 12/16–12/23）；Orchard Central 11:00–21:00","stops":["new_bahru","orchard_c","ogw","taka","ion"],"tip":"Great World 站出發。New Bahru Takeover★（泡泡、印章站、拍貼、客製商品）→ 步行約 15 分至 Orchard Central Holiday Escape★ → 高島屋 GINLEE → ION 聯名咖啡。","d":3617,"g":[[1.29324,103.8317],[1.29285,103.83216],[1.29248,103.83236],[1.29256,103.83271],[1.29246,103.83276],[1.29241,103.83271],[1.29271,103.83479],[1.29272,103.83552],[1.29287,103.83568],[1.29316,103.83631],[1.29311,103.83679],[1.29315,103.83708],[1.29272,103.83719],[1.29244,103.83734],[1.29212,103.8377],[1.29389,103.83889],[1.29388,103.83897],[1.29343,103.83942],[1.29323,103.83924],[1.29296,103.83952],[1.29278,103.83938],[1.29296,103.83952],[1.29323,103.83924],[1.29343,103.83942],[1.29388,103.83897],[1.29438,103.83869],[1.29566,103.83878],[1.29567,103.83891],[1.29585,103.83889],[1.29602,103.84048],[1.299,103.84125],[1.29898,103.84131],[1.29918,103.84135],[1.29922,103.8413],[1.29987,103.84148],[1.30015,103.8402],[1.30041,103.84048],[1.30084,103.8386],[1.301,103.83823],[1.30141,103.83773],[1.30179,103.83753],[1.30261,103.83603],[1.30251,103.83593],[1.30255,103.83584],[1.30248,103.83578],[1.30258,103.83577],[1.30283,103.83532],[1.30268,103.83522],[1.3026,103.83495],[1.30288,103.83454],[1.30305,103.83452],[1.30323,103.83459],[1.30353,103.834],[1.30351,103.83393],[1.3041,103.83283],[1.30399,103.83269],[1.30418,103.83234],[1.30416,103.83212],[1.30397,103.83214]],"from":"Great World 站","to":"ION Orchard"},{"id":"R7","name":"萬態夜間線","color":"#16a34a","when":"08:30–24:00（East Plaza）","stops":["east_plaza","owa","exploria"],"tip":"East Plaza 主題階梯與 Photo Spot★ 在動物園入口外，免門票；Owa Bistro 21:00 收；夜間動物園入口步行約 10 分。","d":1061,"g":[[1.40459,103.79171],[1.40473,103.79168],[1.40485,103.7914],[1.40476,103.79128],[1.40455,103.79023],[1.40463,103.79004],[1.40488,103.7898],[1.40492,103.78964],[1.40488,103.78947],[1.40471,103.78953],[1.4045,103.78925],[1.40427,103.78931],[1.40423,103.78916],[1.40396,103.78925],[1.40375,103.78871],[1.4034,103.78843],[1.40341,103.78832],[1.40334,103.78827],[1.40335,103.78798],[1.40315,103.78778],[1.40309,103.78762],[1.40299,103.78756],[1.4026,103.78777],[1.40257,103.78799],[1.4023,103.78817],[1.40213,103.78805],[1.40207,103.78788],[1.40182,103.78772],[1.40143,103.78761],[1.40126,103.78765],[1.40095,103.7879],[1.40067,103.78831],[1.40075,103.78851],[1.40072,103.78864]],"from":"East Plaza","to":"夜間動物園入口"}],"itin":[{"d":"2026-12-18","label":"12/18（五）抵達樟宜 → 新山","stops":[["12:35","樟宜 T3 入境","changi_t3","move","提行李、買 EZ-Link（可改買 BTS 主題卡）"],["13:30","星耀樟宜 午餐＋Rain Vortex","jewel","sight",""],["15:15","T1 Coach Bay 搭 TS1 跨境巴士","changi_t1","move","約 16:53 抵 JB CIQ"],["17:00","入住新山市區住宿","lodging_jb","hotel",""],["19:00","City Square／新山老街晚餐","csq_jb","food",""]],"bts":[["13:00","P53","順路","T3 入境後在 SimplyGo 售票機找 BTS 主題 EZ-Link 卡（12/8 起販售），可直接取代原本要買的 EZ-Link；兩張都要加值。"],["13:30","P09","順路","星耀樟宜 L4 Welcome Experience 拍照區＝集章點★，10:00–22:00，午餐後上 L4 即可。"],["13:30","P78","順路","Starbucks 星耀樟宜 #02-204 為 BTS 旗艦體驗店，聯名飲品＋周邊組合。"],["—","P08","時段不合","雨漩渦 BTS 聲光秀 20:00／21:00，當天 15:15 已離開；12/23 離境也在早上，此行看不到。"]]},{"d":"2026-12-19","label":"12/19（六）新山老街一日","stops":[["08:30","協裕麵包＋海南咖啡早餐","hiap_joo","food",""],["10:00","柔佛古廟","jb_temple","sight",""],["10:45","JB 華族歷史文物館","jb_museum","sight",""],["12:00","KOTAJAIL 舊監獄文創園區","kotajail","sight",""],["14:30","Mid Valley Southkey","southkey","sight",""],["19:00","老街晚餐＋Pasar Karat 夜市","segget","food",""]],"bts":[["—",null,"無","新山無 BTS THE CITY 活動；同日新加坡有演唱會、Gallery Rave、聖淘沙 Rave & Drone Party，但與新山行程衝突，不建議硬排。"]]},{"d":"2026-12-20","label":"12/20（日）入境新加坡 → 聖淘沙","stops":[["08:30","JB CIQ 過關搭 CW2","jb_ciq","move",""],["10:00","Queen Street Terminal","queen_st","move",""],["10:15","Bras Basah 住宿寄行李","lodging_sg","hotel","Bras Basah 站環狀線直達 HarbourFront"],["11:30","VivoCity 午餐","vivo","food","→ 聖淘沙捷運"],["12:30","Singapore Oceanarium","oceanarium","sight",""],["14:30","環球影城（玩到 21:00）","uss","sight",""]],"bts":[["11:30","P72","順路","VivoCity 午餐可選 BreadTalk（B2-50）、TOAST BOX（B2-54）、Starbucks（#01-43）聯名品項。"],["12:00","P50","順路","原本就要搭聖淘沙捷運：12/4 起有 BTS 主題列車（隨機班次），在 VivoCity 站留意即可。"],["12:30","P23","小繞路","海洋館後方碼頭的 Royal Albatross 主題帆船登船拍照 09:00–17:00（需購票），看完海洋館順路。"],["19:30","P16","順路","環球影城內「木乃伊復仇記」外牆光雕＝集章點★，19:30 起，持當日門票即可。"],["21:00","P15","順路","12/20 BTS 煙火 21:00 於好萊塢湖施放——正是你行程寫的「週末聖誕煙火」，官方已確認；20:45 前到湖邊卡位。"],["21:15","P20","小繞路","煙火後步行約 5 分到名勝世界會議中心：Fan Village★（需票）與 BTS POP-UP 皆營業到 22:00。"],["22:30","P12","順路","回住宿途經國家博物館，外牆亮燈到 24:00。"],["—","P40","衝突","聖淘沙 Rave & Drone Party（12/18–20，需票，20:30 無人機秀）與環球影城時段重疊。"]]},{"d":"2026-12-21","label":"12/21（一）牛車水 → 夜間動物園","stops":[["10:00","飯店附近早餐","lodging_sg","food","Bencoolen 站 → Chinatown 站"],["11:00","佛牙寺龍華院","buddha","sight",""],["11:45","馬里安曼興都廟","mariamman","sight",""],["12:30","麥士威小販中心午餐","maxwell","food",""],["13:30","天福宮 → 直落亞逸街","thian","sight",""],["14:30","安祥山／客納街壁畫","ann_siang","sight",""],["15:30","達士嶺空中花園","pinnacle","sight","約 16:30 回飯店稍歇"],["17:30","Grab 前往萬態 → 夜間動物園","night_safari","sight","約 22:00 回飯店"]],"bts":[["10:00","P19","順路","國家博物館 Dance Mirror★ 10:00 開放，距飯店步行約 8 分；早餐後先集章再去 Bencoolen 站。"],["10:20","P35","小繞路","若時間允許，國家美術館 Art Trail 集章★免門票（10:00–19:00），另有免費 Love Quarter；從 City Hall 站搭東西線轉往牛車水。"],["15:45","P55","順路","達士嶺附近的 Amara Singapore（165 Tanjong Pagar Rd，步行約 5 分）大廳 BTS 照片牆免費，旁有 Element 聯名餐。"],["—","P64","注意","ATIPICO（New Bahru）週一公休；New Bahru 本日不在動線上。"],["18:15","P36","順路","動物園入口外 East Plaza 主題階梯＋THE CITY Photo Spot★（08:30–24:00、免門票），與夜間動物園同園區。"],["18:15","P59","順路","行程中的「園區晚餐」可選 Owa Bistro（動物園入口，聯名菜單，21:00 打烊）。"],["—","P30","選配","Exploria 平日最後入場 19:00、需購票；若要去請 17:00 出發。"],["22:00","P12","順路","回飯店時國家博物館外牆亮燈（至 24:00），土生華人博物館紅光（至 01:00）。"],["—","P39","衝突","環球影城 Night Out 包場 12/21 20:00–01:00 與夜間動物園衝突；當天環球一般門票 18:00 閉園，煙火改在 23:45 特別場。"]]},{"d":"2026-12-22","label":"12/22（二）濱海灣 → 加冷演唱會","stops":[["09:30","濱海灣花園 Flower Dome","flower_dome","sight",""],["10:45","Cloud Forest 雲霧林","cloud_forest","sight",""],["12:00","經雙螺旋橋步行","helix","move",""],["12:30","新達城午餐＋財富之泉","suntec","food",""],["14:30","魚尾獅公園","merlion","sight",""],["15:00","Esplanade Bridge 站搭 10／196 號公車","esp_bus","move",""],["15:30","Kallang Wave Mall 早晚餐","kwm","food",""],["17:00","國家體育場 演唱會入場","stadium","bts",""]],"bts":[["09:30","P75","順路","濱海灣花園 CHAGEE 特別體驗區（17:30 前免門票），逛完花穹即可。"],["14:30","P78","順路","魚尾獅旁 One Fullerton Starbucks 為主力店，聯名飲品。"],["15:30","P37","順路","Feel Alive Zone★（加冷河濱步道，12:00–20:00，今日最後一天），Kallang Wave Mall 旁步行 2 分。"],["15:30","P11","順路","OCBC Square 的 Deloitte 球體 BTS 投影（07:00–22:00）。"],["—","P03","待確認","ARMY 'MADANG'（Samsung★、Visa★、Photoism、客製化）12/22–12/24 11:00–18:00 地點未公布；若在加冷一帶，可於 15:30–16:45 前往。12/23 你 09:30 就去機場，趕不上 11:00 開場。"],["—","P05","待確認","同在 ARMY 'MADANG' 的 Visa 攤位也是集章點★，地點公布後一起判斷。"],["19:30","P10","順路","國家體育場屋頂亮燈 19:30 起（演唱會中）。"],["21:35","P07","非演唱會組","非演唱會組請改看 BTS 版擎天樹燈光音樂秀 21:35–21:50★（World of Plants 免費），而非原本的 19:45／20:45 聖誕場；21:50 後接夜線①②走 15 地標紅光（今晚是最後一晚）。"],["—","P45","非演唱會組","NGS BTS POP-UP 今天是延長營業最後一天（至 22:00）。"],["散場後","P06","選配","15 地標紅光今晚最後一晚至 01:00：散場後若體力允許，可搭 MRT 至 Esplanade 站走夜線② 後半段回 Bras Basah。"]]},{"d":"2026-12-23","label":"12/23（三）返台","stops":[["08:30","退房、周邊早餐","lodging_sg","hotel",""],["09:45","Grab 赴樟宜 T3","changi_t3","move","11:00 前辦理報到出境"]],"bts":[["11:00","P53","順路","若 12/18 沒買到主題 EZ-Link，T3 的 SimplyGo 售票機是最後機會（注意可能位於管制區外）。"],["—","P13","時段不合","New Bahru Takeover 與國家博物館外牆亮燈今日最後一天，但與 09:30 出發衝突。"],["—","P43","時段不合","Zouk Encore Night★（12/23 22:00）已返台。"]]}],"poi":{"changi_t3":[1.3565,103.98635],"jewel":[1.36022,103.98967],"changi_t1":[1.36146,103.99075],"jb_ciq":[1.465,103.76672],"lodging_jb":[1.46169,103.764],"csq_jb":[1.46169,103.764],"hiap_joo":[1.45667,103.76436],"jb_temple":[1.46057,103.763],"jb_museum":[1.45602,103.76328],"kotajail":[1.46343,103.7567],"southkey":[1.5017,103.77732],"segget":[1.45898,103.76454],"queen_st":[1.30349,103.85663],"lodging_sg":[1.29697,103.8506],"vivo":[1.26437,103.82295],"oceanarium":[1.25835,103.82048],"uss":[1.2542,103.82267],"chinatown":[1.28417,103.84352],"buddha":[1.28151,103.84419],"mariamman":[1.28268,103.84519],"maxwell":[1.2793,103.84666],"thian":[1.281,103.8475],"ann_siang":[1.27936,103.84632],"pinnacle":[1.27677,103.84132],"night_safari":[1.40135,103.789],"flower_dome":[1.28454,103.8647],"cloud_forest":[1.28388,103.86603],"helix":[1.28752,103.86062],"suntec":[1.29454,103.85771],"merlion":[1.28696,103.85446],"esp_bus":[1.28836,103.85426],"kwm":[1.30355,103.87278],"stadium":[1.30449,103.87434]},"mrt":[["Stadium",1.30276,103.87537],["Bayfront",1.2819,103.859],["City Hall",1.29303,103.85264],["Raffles Place",1.28354,103.85146],["Esplanade",1.2934,103.8556],["Promenade",1.2931,103.861],["Bras Basah",1.29697,103.8506],["Bencoolen",1.2985,103.8502],["Fort Canning",1.2918,103.8444],["Clarke Quay",1.2886,103.8467],["Chinatown",1.28417,103.84352],["Great World",1.2934,103.8317],["Orchard",1.30312,103.83138],["Somerset",1.30029,103.83899],["HarbourFront",1.2655,103.82157],["Changi Airport",1.3573,103.9885]]};
+const isSheet = () => getComputedStyle(document.getElementById('grab')).display !== 'none';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const WD = ['日','一','二','三','四','五','六'];
+const FEE = {free:['免費','b-free'],ticket:['需購票','b-ticket'],mixed:['部分需票','b-mixed'],spend:['消費','b-spend'],resv:['需預約','b-resv']};
+const EMO = {concert:'🎤',madang:'💜',landmark:'✨',activity:'🎯',party:'🎉',shopping:'🛍️',mobility:'🚡',stay:'🏨',fnb:'🍴'};
+const FIT_C = {'順路':'#16a34a','小繞路':'#2563eb','選配':'#9333ea','非演唱會組':'#9333ea','衝突':'#dc2626','時段不合':'#dc2626','待確認':'#d97706','注意':'#d97706','無':'#64748b'};
+const KIND_C = {fly:'#0f172a',move:'#475569',sight:'#0369a1',food:'#ea580c',hotel:'#7c3aed',bts:'#c81d25'};
+const store = { get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+                set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
+function toast(m){ const t=$('#toast'); t.textContent=m; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',2200); }
+
+/* ---------- 時間（SGT） ---------- */
+function sgtNow(){ const n=new Date(); return new Date(n.getTime()+n.getTimezoneOffset()*60000+8*3600000); }
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const addDay = (s,n) => { const d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return ymd(d); };
+const toMin = hm => { const [h,m]=hm.split(':').map(Number); return h*60+m; };
+function onDate(p, d){
+  if (p.closed_dow){ const w=new Date(d+'T00:00:00').getDay(); if(p.closed_dow.includes(w)) return false; }
+  if (p.dates) return p.dates.includes(d);
+  return p.s && d >= p.s && d <= p.e;
+}
+function liveNow(p){
+  if (!p.h) return false;
+  const n=sgtNow(), today=ymd(n), mins=n.getHours()*60+n.getMinutes(), yest=addDay(today,-1);
+  return p.h.some(([a,b])=>{ const A=toMin(a),B=toMin(b);
+    if (onDate(p,today) && mins>=A && mins<Math.min(B,1440)) return true;
+    if (B>1440 && onDate(p,yest) && mins < B-1440) return true; return false; });
+}
+function fmtRange(p){
+  if (p.dates){ return p.dates.length>6 ? `${md(p.dates[0])}–${md(p.dates[p.dates.length-1])}（指定日）` : p.dates.map(md).join('、'); }
+  return p.s===p.e ? md(p.s) : `${md(p.s)}–${md(p.e)}`;
+}
+function md(s){ const d=new Date(s+'T00:00:00'); const y=d.getFullYear()!==2026?`${d.getFullYear()}/`:''; return `${y}${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`; }
+
+/* ---------- 地圖 ---------- */
+const carto = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});
+const dark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});
+const osm   = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'});
+const esri  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri'});
+const map = L.map('map',{zoomControl:false, layers:[carto], tap:true}).setView([1.2895,103.852],14);
+L.control.zoom({position:'topright'}).addTo(map);
+L.control.scale({metric:true,imperial:false,position:'bottomleft'}).addTo(map);
+const bases = {'CARTO 街道（預設）':carto,'CARTO 夜間賞燈':dark,'OpenStreetMap':osm,'Esri 衛星影像':esri};
+const mrt = L.layerGroup(D.mrt.map(s=>L.circleMarker([s[1],s[2]],{radius:5,color:'#fff',weight:2,fillColor:'#0f172a',fillOpacity:.95}).bindTooltip('MRT '+s[0],{direction:'top'})));
+const layersCtl = L.control.layers(bases,{'MRT 參考站':mrt},{position:'topright',collapsed:true}).addTo(map);
+const legend = L.control({position:'bottomright'});
+legend.onAdd = () => { const d=L.DomUtil.create('div','legend'); d.innerHTML = Object.entries(D.cats).map(([k,[n,c]])=>`<div><i style="background:${c}"></i>${EMO[k]} ${n}</div>`).join('') + '<div><i style="background:#fff;outline:3px solid #fbbf24"></i>集章點 ★</div>'; L.DomEvent.disableClickPropagation(d); return d; };
+if (!isSheet() && innerHeight > 600) legend.addTo(map);
+
+const PROG = Object.fromEntries(D.programs.map(p=>[p.id,p]));
+const VEN = D.venues;
+const venueProgs = {}; D.programs.forEach(p=>p.v.forEach(k=>(venueProgs[k]=venueProgs[k]||[]).push(p)));
+const CAT_ORDER = Object.keys(D.cats);
+function topCat(ps){ return ps.map(p=>p.cat).sort((a,b)=>CAT_ORDER.indexOf(a)-CAT_ORDER.indexOf(b))[0]; }
+function venueColor(ps){ return D.cats[topCat(ps)][1]; }
+function pinIcon(k, ps){
+  const star = ps.some(p=>p.stamp);
+  return L.divIcon({className:'',html:`<div class="pin ${star?'star':''}" style="background:${venueColor(ps)}">${star?'★':EMO[topCat(ps)]}</div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
+}
+function gmapsWalk(lat,lng){ return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`; }
+function progHTML(p, live){
+  const [cn,cc] = D.cats[p.cat]; const [fn,fc] = FEE[p.fee]||['',''];
+  return `<div class="pp-ev"><span class="tag" style="background:${cc}">${cn}</span><b>${esc(p.t)}</b>${p.stamp?'<span class="bd b-stamp">★集章</span>':''}${live?'<span class="bd b-now">進行中</span>':''}
+    <div>${esc(p.zh)}</div><div>📅 ${fmtRange(p)}　⏰ ${esc(p.time)}</div><div><span class="bd ${fc}" style="margin-left:0">${fn}</span>${p.upd?'<span class="bd b-upd">11/24 更新</span>':''}</div></div>`;
+}
+function popupHTML(k){
+  const v = VEN[k], ps = venueProgs[k]||[];
+  return `<div class="pp-t">${esc(v[0])}</div><div class="pp-en">${esc(v[1])}</div>
+    <div class="pp-ad">📍 ${esc(v[4])}${v[6]?'　<span class="muted">（推估位置，以現場為準）</span>':''}</div>
+    <div class="pp-sc">${ps.map(p=>progHTML(p, liveNow(p))).join('')}</div>
+    <div class="act"><a class="btn g" href="${gmapsWalk(v[2],v[3])}" target="_blank" rel="noopener">Google 步行導航</a>
+    <a class="btn o" href="https://www.openstreetmap.org/?mlat=${v[2]}&mlon=${v[3]}#map=18/${v[2]}/${v[3]}" target="_blank" rel="noopener">OSM</a></div>`;
+}
+const cluster = L.markerClusterGroup({disableClusteringAtZoom:16, maxClusterRadius:38, showCoverageOnHover:false, spiderfyOnMaxZoom:true,
+  iconCreateFunction:c=>{ const ms=c.getAllChildMarkers(); const star=ms.some(m=>m.options._star); return L.divIcon({className:'',html:`<div class="mc ${star?'star':''}"><div>${ms.length}</div></div>`,iconSize:[36,36],iconAnchor:[18,18]}); }});
+function fitTo(b, maxZoom){ const mob=isSheet(); const sh=mob?$('#panel').getBoundingClientRect().height:0; map.fitBounds(b,{paddingTopLeft:[30,30],paddingBottomRight:[mob?30:60, sh+24], maxZoom:maxZoom||17}); }
+map.addLayer(cluster);
+const markers = {};
+Object.keys(VEN).forEach(k=>{
+  if (!venueProgs[k]) return;
+  const v=VEN[k];
+  markers[k] = L.marker([v[2],v[3]],{icon:pinIcon(k,venueProgs[k]), title:v[0], _star:venueProgs[k].some(p=>p.stamp)}).bindPopup(()=>popupHTML(k),{maxWidth:310, autoPanPaddingTopLeft:[10,70]});
+});
+function focusVenue(k, z){
+  const m = markers[k]; if(!m) return;
+  if (!cluster.hasLayer(m)) cluster.addLayer(m);
+  if (isSheet()) setSheet('peek');
+  cluster.zoomToShowLayer(m, ()=>{ const zz=Math.max(map.getZoom(), z||17); const mob=isSheet(); let ll=m.getLatLng();
+    if(mob){ const pt=map.project(ll,zz); pt.y += ($('#panel').getBoundingClientRect().height)/2 - 120; ll=map.unproject(pt,zz); }
+    map.setView(ll, zz); setTimeout(()=>m.openPopup(),260); });
+}
+
+/* ---------- 活動清單 ---------- */
+const TRIP = new Set(D.itin.map(d=>d.d));
+let F = {date:'all', cats:new Set(), q:'', stamp:false, free:false, live:false, trip:false};
+(function initFilters(){
+  const days=[]; for(let d='2026-12-01'; d<='2027-01-03'; d=addDay(d,1)) days.push(d);
+  const today = ymd(sgtNow());
+  $('#dateRow').innerHTML = `<button class="chip on" data-d="all">全部日期</button>` + days.map(d=>{
+    const t=new Date(d+'T00:00:00'); const c=[17,19,20,22].includes(t.getDate())&&t.getMonth()===11?'🎤':'';
+    return `<button class="chip ${TRIP.has(d)?'trip':''}" data-d="${d}">${d===today?'今天 ':''}${t.getMonth()+1}/${t.getDate()}(${WD[t.getDay()]})${c}</button>`; }).join('');
+  $('#catRow').innerHTML = Object.entries(D.cats).map(([k,[n,c]])=>`<button class="chip" data-c="${k}"><span class="dot" style="background:${c}"></span>${n}</button>`).join('');
+  $('#flagRow').innerHTML = `<button class="chip" data-f="trip">🧳 我的行程日 12/18–23</button><button class="chip" data-f="live">🟢 現在進行中</button><button class="chip" data-f="stamp">★ 集章點</button><button class="chip" data-f="free">免費</button>`;
+  $('#dateRow').onclick = e=>{ const b=e.target.closest('.chip'); if(!b) return; F.date=b.dataset.d; $$('#dateRow .chip').forEach(x=>x.classList.toggle('on',x===b)); render(); };
+  $('#catRow').onclick = e=>{ const b=e.target.closest('.chip'); if(!b) return; const c=b.dataset.c; F.cats.has(c)?F.cats.delete(c):F.cats.add(c); b.classList.toggle('on'); render(); };
+  $('#flagRow').onclick = e=>{ const b=e.target.closest('.chip'); if(!b) return; const f=b.dataset.f; F[f]=!F[f]; b.classList.toggle('on',F[f]); render(); };
+  $('#q').oninput = e=>{ F.q=e.target.value.trim().toLowerCase(); render(); };
+  if (days.includes(today)) { const b=$(`#dateRow .chip[data-d="${today}"]`); if(b){ b.click(); setTimeout(()=>b.scrollIntoView({inline:'center',block:'nearest'}),50);} }
+})();
+function pass(p){
+  if (F.cats.size && !F.cats.has(p.cat)) return false;
+  if (F.date!=='all' && !onDate(p,F.date)) return false;
+  if (F.trip && ![...TRIP].some(d=>onDate(p,d))) return false;
+  if (F.stamp && !p.stamp) return false;
+  if (F.free && p.fee!=='free') return false;
+  if (F.live && !liveNow(p)) return false;
+  if (F.q){ const txt=(p.t+' '+p.zh+' '+p.v.map(k=>VEN[k][0]+' '+VEN[k][1]+' '+VEN[k][4]).join(' ')).toLowerCase(); if(!txt.includes(F.q)) return false; }
+  return true;
+}
+function render(){
+  const ok = D.programs.filter(pass), okIds = new Set(ok.map(p=>p.id));
+  const vis = Object.keys(markers).filter(k=>venueProgs[k].some(p=>okIds.has(p.id)));
+  cluster.clearLayers(); cluster.addLayers(vis.map(k=>markers[k]));
+  const byZone = {};
+  vis.forEach(k=>(byZone[VEN[k][5]]=byZone[VEN[k][5]]||[]).push(k));
+  let h='';
+  const floating = ok.filter(p=>!p.v.length);
+  if (floating.length) h += `<div class="zh">待公布地點／全島</div>` + floating.map(p=>`<div class="card">${progHTML(p, liveNow(p)).replace('pp-ev','')}</div>`).join('');
+  D.zones.forEach(z=>{ if(!byZone[z]) return; h+=`<div class="zh">${z}</div>`;
+    byZone[z].forEach(k=>{ const v=VEN[k], ps=venueProgs[k].filter(p=>okIds.has(p.id));
+      h+=`<div class="card" data-k="${k}"><div class="nm">${esc(v[0])} ${ps.some(p=>p.stamp)?'<span class="bd b-stamp">★</span>':''}</div><div class="en">${esc(v[1])}</div>`+
+        ps.map(p=>{ const [cn,cc]=D.cats[p.cat]; const [fn,fc]=FEE[p.fee]||['',''];
+          return `<div class="ev"><span class="tag" style="background:${cc}">${cn}</span><b>${esc(p.t)}</b>${p.stamp?'<span class="bd b-stamp">★</span>':''}${liveNow(p)?'<span class="bd b-now">進行中</span>':''}<br><span class="muted">${fmtRange(p)}｜${esc(p.time)}</span><span class="bd ${fc}">${fn}</span></div>`; }).join('') + `</div>`; }); });
+  $('#list').innerHTML = h || '<div class="note">沒有符合條件的活動，請放寬篩選。</div>';
+  $('#cnt').textContent = `符合 ${ok.length} 項活動・${vis.length} 個地點`;
+}
+$('#list').onclick = e=>{ const c=e.target.closest('.card[data-k]'); if(c) focusVenue(c.dataset.k); };
+render();
+setTimeout(()=>fitTo(L.latLngBounds([[1.2795,103.840],[1.3045,103.875]]), 15), 60);
+
+/* ---------- 我的行程 ---------- */
+const itinLayer = L.layerGroup().addTo(map);
+let curDay = null;
+$('#dayRow').innerHTML = D.itin.map((d,i)=>`<button class="chip trip" data-i="${i}">${d.label.split('（')[0]}（${d.label.split('（')[1].slice(0,1)}）</button>`).join('') + `<button class="chip" data-i="-1">隱藏行程</button>`;
+$('#dayRow').onclick = e=>{ const b=e.target.closest('.chip'); if(!b) return; showDay(+b.dataset.i); };
+function showDay(i){
+  $$('#dayRow .chip').forEach(x=>x.classList.toggle('on', +x.dataset.i===i));
+  itinLayer.clearLayers(); curDay=i; routeLayer.clearLayers(); curRoute=null; $$('.rt').forEach(x=>x.classList.remove('on'));
+  map.getContainer().classList.toggle('dim', i>=0);
+  if (i<0){ $('#itin').innerHTML='<div class="note">行程圖層已隱藏。</div>'; return; }
+  const d = D.itin[i], pts=[];
+  d.stops.forEach((s,j)=>{ const ll=D.poi[s[2]]; pts.push(ll);
+    L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="ipin" style="--c:${KIND_C[s[3]]}">${j+1}</div>`,iconSize:[26,26],iconAnchor:[13,13]}), zIndexOffset:1000})
+     .bindPopup(`<div class="pp-t">${j+1}. ${esc(s[1])}</div><div>⏰ ${s[0]}</div>${s[4]?`<div class="muted">${esc(s[4])}</div>`:''}<div class="act"><a class="btn g" href="https://www.google.com/maps/dir/?api=1&destination=${ll[0]},${ll[1]}" target="_blank" rel="noopener">Google 導航</a></div>`).addTo(itinLayer); });
+  L.polyline(pts,{color:'#0f172a',weight:3,opacity:.65,dashArray:'6 8'}).addTo(itinLayer);
+  const btsV = new Set(); d.bts.forEach(b=>{ if(b[1]) PROG[b[1]].v.forEach(k=>btsV.add(k)); });
+  const nearV = [...btsV].filter(k=>{ const v=VEN[k]; return pts.some(p=>Math.hypot((p[0]-v[2])*111, (p[1]-v[3])*111) < 8); });
+  nearV.forEach(k=>{ const v=VEN[k]; L.circleMarker([v[2],v[3]],{radius:17,color:'#f59e0b',weight:3,fill:false,dashArray:'4 4',interactive:false}).addTo(itinLayer); });
+  if (isSheet()) setSheet('half');
+  setTimeout(()=>fitTo(L.latLngBounds(pts.concat(nearV.map(k=>[VEN[k][2],VEN[k][3]]))), 15), 260);
+  $('#itin').innerHTML = `<div class="day"><div style="font-weight:900;font-size:15px;margin-bottom:6px">${esc(d.label)}</div>
+    <div class="tl">${d.stops.map((s,j)=>`<div class="st" style="--c:${KIND_C[s[3]]}"><span class="tm">${s[0]}</span><b>${j+1}. ${esc(s[1])}</b>${s[4]?`<div class="muted">${esc(s[4])}</div>`:''}</div>`).join('')}</div>
+    <div class="zh">順路 BTS THE CITY 活動</div>
+    ${d.bts.map(b=>{ const p=b[1]?PROG[b[1]]:null; return `<div class="sg fit-${b[2]}"><span class="fit" style="background:${FIT_C[b[2]]||'#334155'}">${b[2]}</span><b>${b[0]}</b>　${p?`<span class="go" data-p="${p.id}">${esc(p.t)}</span>${p.stamp?'<span class="bd b-stamp">★</span>':''}`:''}<div>${esc(b[3])}</div></div>`; }).join('')}</div>`;
+}
+$('#itin').onclick = e=>{ const g=e.target.closest('.go'); if(!g) return; const p=PROG[g.dataset.p]; if(p&&p.v.length){ const d=D.itin[curDay]; const ref=d?D.poi[d.stops[0][2]]:null;
+  let best=p.v[0]; if(ref){ best=p.v.slice().sort((a,b)=>Math.hypot(VEN[a][2]-ref[0],VEN[a][3]-ref[1])-Math.hypot(VEN[b][2]-ref[0],VEN[b][3]-ref[1]))[0]; } focusVenue(best); } else toast('地點待公布'); };
+
+/* ---------- 散步路線 ---------- */
+const routeLayer = L.layerGroup().addTo(map);
+let curRoute=null;
+function gmRoute(r){
+  const pts=r.stops.map(k=>[VEN[k][2],VEN[k][3]]);
+  const o=r.start||pts[0], dst=pts[pts.length-1], wp=pts.slice(r.start?0:1,-1).slice(0,8);
+  return `https://www.google.com/maps/dir/?api=1&origin=${o[0]},${o[1]}&destination=${dst[0]},${dst[1]}&waypoints=${wp.map(p=>p.join(',')).join('%7C')}&travelmode=walking`;
+}
+$('#routes').innerHTML = `<div class="note">路線依 OpenStreetMap 步行路網計算（OSRM foot），時間以時速 4.5 km 估算，不含停留。夜線①＋② 可連走約 8 km，建議分兩晚或只走②。</div>` +
+  D.routes.map(r=>{ const km=(r.d/1000).toFixed(1), min=Math.round(r.d/75);
+   return `<div class="rt" id="rt-${r.id}" style="--c:${r.color}"><div class="nm">${esc(r.name)}</div>
+    <div class="kv">🚶 ${km} km・步行約 ${min} 分（不含停留）</div><div class="kv">🕖 ${esc(r.when)}</div>
+    <div class="kv">🟢 起點 ${esc(r.from)} → 🏁 ${esc(r.to)}</div>
+    <ol class="ol">${r.stops.map(k=>`<li>${esc(VEN[k][0])}${(venueProgs[k]||[]).some(p=>p.stamp)?' ★':''}</li>`).join('')}</ol>
+    <div class="kv" style="margin-top:6px">💡 ${esc(r.tip)}</div>
+    <div class="act"><button class="btn" data-r="${r.id}">在地圖顯示</button><a class="btn g" href="${gmRoute(r)}" target="_blank" rel="noopener">Google 步行導航</a></div></div>`; }).join('');
+$('#routes').onclick = e=>{ const b=e.target.closest('button[data-r]'); if(b) showRoute(b.dataset.r); };
+function showRoute(id){
+  routeLayer.clearLayers(); $$('.rt').forEach(x=>x.classList.toggle('on', x.id==='rt-'+id));
+  if (curRoute===id){ curRoute=null; map.getContainer().classList.remove('dim'); return; } curRoute=id;
+  itinLayer.clearLayers(); curDay=null; $$('#dayRow .chip').forEach(x=>x.classList.remove('on')); map.getContainer().classList.add('dim');
+  const r=D.routes.find(x=>x.id===id);
+  L.polyline(r.g,{color:'#fff',weight:9,opacity:.9}).addTo(routeLayer);
+  const line=L.polyline(r.g,{color:r.color,weight:5,opacity:.95}).addTo(routeLayer);
+  r.stops.forEach((k,i)=>{ const v=VEN[k]; L.marker([v[2],v[3]],{icon:L.divIcon({className:'',html:`<div class="npin" style="--c:${r.color}">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:900})
+     .on('click',()=>focusVenue(k)).addTo(routeLayer); });
+  if (isSheet()) setSheet('peek');
+  setTimeout(()=>fitTo(line.getBounds()), 260);
+  if (r.id.startsWith('R1') && !map.hasLayer(dark)) toast('夜線提示：右上 🌙 可切換夜間底圖');
+}
+
+/* ---------- 集章 ---------- */
+let done = new Set(store.get('bts_sg_stamps',[]));
+function renderStamps(){
+  const sps = D.programs.filter(p=>p.stamp);
+  const groups = {}; sps.forEach(p=>{ const key = p.id==='P42'||p.id==='P43' ? 'zouk' : p.id; (groups[key]=groups[key]||[]).push(p); });
+  const items = Object.entries(groups);
+  const n = items.filter(([k])=>done.has(k)).length;
+  $('#spCnt').textContent = `${n}/${items.length}`;
+  $('#stamps').innerHTML = `<div class="prog"><i style="width:${n/items.length*100}%"></i></div>
+   <div class="note">官方集章點共 ${items.length} 處，集章細節（領獎方式）官方將另行公告。勾選紀錄只存在本機瀏覽器。🧳 標示＝可排進你的 12/18–12/23 行程。</div>` +
+   items.map(([k,ps])=>{ const p=ps[0], v=p.v[0]?VEN[p.v[0]]:null, inTrip = ps.some(x=>D.itin.some(d=>d.bts.some(b=>b[1]===x.id && !['衝突','時段不合'].includes(b[2]))));
+     return `<label class="sp ${done.has(k)?'done':''}"><input type="checkbox" data-k="${k}" ${done.has(k)?'checked':''}><div><div class="nm">${inTrip?'🧳 ':''}${esc(p.t.replace(' — Countdown Night',''))}</div>
+      <div class="kv">${v?esc(v[0]):'地點待公布（ARMY MADANG）'}｜${ps.map(fmtRange).join('、')}｜${esc(p.time)}</div>
+      <div class="kv"><span class="bd ${FEE[p.fee][1]}" style="margin-left:0">${FEE[p.fee][0]}</span>${v?` <span class="go" style="color:#1d4ed8;text-decoration:underline" data-v="${p.v[0]}">地圖</span>`:''}</div></div></label>`; }).join('');
+}
+$('#stamps').onchange = e=>{ const c=e.target.closest('input[data-k]'); if(!c) return; c.checked?done.add(c.dataset.k):done.delete(c.dataset.k); store.set('bts_sg_stamps',[...done]); renderStamps(); };
+$('#stamps').onclick = e=>{ const g=e.target.closest('.go[data-v]'); if(g){ e.preventDefault(); focusVenue(g.dataset.v); } };
+renderStamps();
+
+/* ---------- 分頁、面板 ---------- */
+$$('.tab').forEach(t=>t.onclick=()=>{ if(t.dataset.p==='ev'||t.dataset.p==='sp'){ itinLayer.clearLayers(); routeLayer.clearLayers(); curDay=null; curRoute=null; $$('.rt').forEach(x=>x.classList.remove('on')); $$('#dayRow .chip').forEach(x=>x.classList.remove('on')); map.getContainer().classList.remove('dim'); }
+  $$('.tab').forEach(x=>x.classList.toggle('on',x===t)); $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t.dataset.p));
+  if (t.dataset.p==='it' && curDay===null) showDay(Math.max(0, D.itin.findIndex(d=>d.d===ymd(sgtNow()))));
+  if (isSheet() && getComputedStyle(document.documentElement).getPropertyValue('--sheet-h').trim()==='22vh') setSheet('half'); });
+const SH = {peek:'22vh', half:'46vh', full:'86vh'};
+function setSheet(s){ document.documentElement.style.setProperty('--sheet-h', SH[s]); setTimeout(()=>map.invalidateSize(),250); }
+(function drag(){
+  const g=$('#grab'), p=$('#panel'); let y0=null,h0=0;
+  g.addEventListener('pointerdown',e=>{ y0=e.clientY; h0=p.getBoundingClientRect().height; p.classList.add('drag'); g.setPointerCapture(e.pointerId); });
+  g.addEventListener('pointermove',e=>{ if(y0===null) return; const h=Math.min(innerHeight*.9,Math.max(110,h0+(y0-e.clientY))); document.documentElement.style.setProperty('--sheet-h',h+'px'); });
+  g.addEventListener('pointerup',e=>{ if(y0===null) return; p.classList.remove('drag'); const r=p.getBoundingClientRect().height/innerHeight; const moved=Math.abs(e.clientY-y0)>6; y0=null;
+    if(!moved){ setSheet(r<.3?'half':r<.6?'full':'peek'); return; } setSheet(r<.33?'peek':r<.66?'half':'full'); });
+})();
+
+/* ---------- 工具列 ---------- */
+$('#btnNight').onclick = ()=>{ const on=!map.hasLayer(dark); Object.values(bases).forEach(l=>map.removeLayer(l)); (on?dark:carto).addTo(map); $('#btnNight').classList.toggle('on',on); };
+map.on('baselayerchange',e=>$('#btnNight').classList.toggle('on', e.layer===dark));
+let me=null;
+$('#btnLoc').onclick = ()=>{ if(!navigator.geolocation){ toast('此瀏覽器不支援定位'); return; }
+  toast('定位中…'); navigator.geolocation.getCurrentPosition(pos=>{ const ll=[pos.coords.latitude,pos.coords.longitude];
+    if(me) map.removeLayer(me); me=L.layerGroup([L.circle(ll,{radius:pos.coords.accuracy,color:'#2563eb',weight:1,fillOpacity:.1}),L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1})]).addTo(map);
+    map.setView(ll,16); }, err=>toast('無法取得位置：'+err.message), {enableHighAccuracy:true,timeout:10000}); };
+$('#btnMenu').onclick = e=>{ e.stopPropagation(); const m=$('#menu'); m.style.display = m.style.display==='block'?'none':'block'; };
+document.addEventListener('click',e=>{ if(!e.target.closest('#menu')) $('#menu').style.display='none'; });
+$('#menu').onclick = e=>{ const b=e.target.closest('button[data-x]'); if(!b) return; const x=b.dataset.x; $('#menu').style.display='none';
+  if(x==='all') fitTo(L.latLngBounds([[1.243,103.78],[1.41,103.995]])); else exportData(x); };
+function dl(name, text, type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+function exportData(x){
+  const rows=[]; D.programs.forEach(p=>{ (p.v.length?p.v:[null]).forEach(k=>rows.push([p,k])); });
+  if(x==='geojson'){ dl('BTS_THE_CITY_ARIRANG_SG_2026.geojson', JSON.stringify({type:'FeatureCollection',features:rows.filter(r=>r[1]).map(([p,k])=>({type:'Feature',geometry:{type:'Point',coordinates:[VEN[k][3],VEN[k][2]]},properties:{id:p.id,category:D.cats[p.cat][0],title:p.t,desc:p.zh,venue:VEN[k][0],address:VEN[k][4],dates:fmtRange(p),time:p.time,fee:FEE[p.fee][0],stamp:!!p.stamp}}))},null,1),'application/geo+json'); }
+  if(x==='csv'){ const h=['編號','類別','活動','說明','地點','地址','緯度','經度','日期','時間(SGT)','費用','集章']; const q=s=>`"${String(s??'').replace(/"/g,'""')}"`;
+    dl('BTS_THE_CITY_ARIRANG_SG_2026.csv','﻿'+[h.map(q).join(',')].concat(rows.map(([p,k])=>[p.id,D.cats[p.cat][0],p.t,p.zh,k?VEN[k][0]:'待公布／全島',k?VEN[k][4]:'',k?VEN[k][2]:'',k?VEN[k][3]:'',fmtRange(p),p.time,FEE[p.fee][0],p.stamp?'★':''].map(q).join(','))).join('\n'),'text/csv;charset=utf-8'); }
+  if(x==='kml'){ const ex=s=>String(s).replace(/[<&]/g,c=>c==='<'?'&lt;':'&amp;');
+    dl('BTS_THE_CITY_ARIRANG_SG_2026.kml',`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>BTS THE CITY ARIRANG SINGAPORE 2026</name>`+
+      Object.keys(markers).map(k=>`<Placemark><name>${ex(VEN[k][0])}</name><description><![CDATA[${venueProgs[k].map(p=>`${p.stamp?'★':''}[${D.cats[p.cat][0]}] ${p.t}｜${fmtRange(p)}｜${p.time}`).join('<br>')}]]></description><Point><coordinates>${VEN[k][3]},${VEN[k][2]},0</coordinates></Point></Placemark>`).join('')+
+      `</Document></kml>`,'application/vnd.google-earth.kml+xml'); }
+}
+setInterval(()=>{ if(F.live) render(); }, 60000);
+</script>
+</body>
+</html>
